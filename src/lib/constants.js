@@ -1,5 +1,6 @@
 export const STORAGE_KEY = 'budget-tracker.v1'
 export const TAGS_KEY = 'budget-tracker.tags.v1'
+export const CATEGORIES_KEY = 'budget-tracker.categories.v1'
 export const SEEDED_KEY = 'budget-tracker.seeded.v1'
 
 export const TYPES = {
@@ -12,24 +13,25 @@ export const TYPE_LABELS = {
   [TYPES.EXPENSE]: 'Pengeluaran',
 }
 
-// Kategori + warna chart (urutan konsisten, warna stabil).
-export const CATEGORIES = {
+// Kategori bawaan — dipakai sebagai data awal, lalu disimpan ke LocalStorage
+// sehingga pengguna bisa menambah/mengedit/menghapus kategori dan anggarannya.
+export const DEFAULT_CATEGORIES = {
   expense: [
-    { id: 'makanan', label: 'Makanan & Minuman', color: '#f43f5e' },
-    { id: 'transportasi', label: 'Transportasi', color: '#f97316' },
-    { id: 'belanja', label: 'Belanja', color: '#eab308' },
-    { id: 'tagihan', label: 'Tagihan & Utilitas', color: '#3b82f6' },
-    { id: 'hiburan', label: 'Hiburan', color: '#a855f7' },
-    { id: 'kesehatan', label: 'Kesehatan', color: '#06b6d4' },
-    { id: 'pendidikan', label: 'Pendidikan', color: '#10b981' },
-    { id: 'lainnya', label: 'Lainnya', color: '#64748b' },
+    { id: 'makanan', label: 'Makanan & Minuman', color: '#f43f5e', type: TYPES.EXPENSE },
+    { id: 'transportasi', label: 'Transportasi', color: '#f97316', type: TYPES.EXPENSE },
+    { id: 'belanja', label: 'Belanja', color: '#eab308', type: TYPES.EXPENSE },
+    { id: 'tagihan', label: 'Tagihan & Utilitas', color: '#3b82f6', type: TYPES.EXPENSE },
+    { id: 'hiburan', label: 'Hiburan', color: '#a855f7', type: TYPES.EXPENSE },
+    { id: 'kesehatan', label: 'Kesehatan', color: '#06b6d4', type: TYPES.EXPENSE },
+    { id: 'pendidikan', label: 'Pendidikan', color: '#10b981', type: TYPES.EXPENSE },
+    { id: 'lainnya', label: 'Lainnya', color: '#64748b', type: TYPES.EXPENSE },
   ],
   income: [
-    { id: 'gaji', label: 'Gaji', color: '#10b981' },
-    { id: 'bonus', label: 'Bonus', color: '#22c55e' },
-    { id: 'freelance', label: 'Freelance', color: '#14b8a6' },
-    { id: 'investasi', label: 'Investasi', color: '#84cc16' },
-    { id: 'lainnya', label: 'Lainnya', color: '#64748b' },
+    { id: 'gaji', label: 'Gaji', color: '#10b981', type: TYPES.INCOME },
+    { id: 'bonus', label: 'Bonus', color: '#22c55e', type: TYPES.INCOME },
+    { id: 'freelance', label: 'Freelance', color: '#14b8a6', type: TYPES.INCOME },
+    { id: 'investasi', label: 'Investasi', color: '#84cc16', type: TYPES.INCOME },
+    { id: 'lainnya', label: 'Lainnya', color: '#64748b', type: TYPES.INCOME },
   ],
 }
 
@@ -61,4 +63,19 @@ export const PRESET_RANGES = [
 export const CHART_COLORS = [
   '#f43f5e', '#f97316', '#eab308', '#3b82f6', '#a855f7',
   '#06b6d4', '#10b981', '#84cc16', '#6366f1', '#ec4899',
+]
+
+// Pilihan ikon yang bisa dipakai untuk kategori baru (path-nya ada di CATEGORY_ICONS).
+export const CATEGORY_ICON_CHOICES = [
+  'makanan', 'transportasi', 'belanja', 'tagihan', 'hiburan',
+  'kesehatan', 'pendidikan', 'gaji', 'bonus', 'freelance',
+  'investasi', 'lainnya',
+]
+
+// Pilihan warna untuk kategori baru (tidak duplikat).
+export const CATEGORY_COLOR_CHOICES = [
+  ...new Set([
+    ...CHART_COLORS,
+    ...Object.values(DEFAULT_CATEGORIES).flat().map((c) => c.color),
+  ]),
 ]

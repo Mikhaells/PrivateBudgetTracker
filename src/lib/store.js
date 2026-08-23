@@ -1,4 +1,4 @@
-import { STORAGE_KEY, TAGS_KEY } from './constants'
+import { CATEGORIES_KEY, STORAGE_KEY, TAGS_KEY } from './constants'
 
 function safeJsonParse(value, fallback) {
   try {
@@ -28,6 +28,14 @@ export function loadTags() {
 
 export function saveTags(tags) {
   localStorage.setItem(TAGS_KEY, JSON.stringify(tags))
+}
+
+export function loadCategories() {
+  return safeJsonParse(localStorage.getItem(CATEGORIES_KEY), null)
+}
+
+export function saveCategories(categories) {
+  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories))
 }
 
 export function clearAll() {

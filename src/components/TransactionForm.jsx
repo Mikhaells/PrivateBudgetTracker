@@ -1,44 +1,38 @@
 import { useEffect, useState } from 'react'
-import { CATEGORIES, CATEGORY_ICONS, TYPES, TYPE_LABELS } from '../lib/constants'
-import { todayISO } from '../lib/format'
+import { CATEGORY_ICONS, DEFAULT_CATEGORIES, TYPES, TYPE_LABELS } from '../lib/constants'
+import { formatAmountInput, onlyDigits, todayISO } from '../lib/format'
+import { INPUT_CLS } from '../lib/ui'
 import TagInput from './TagInput'
+import Calculator from './Calculator'
 
-const emptyForm = {
-  type: TYPES.EXPENSE,
-  amount: '',
-  category: CATEGORIES.expense[0].id,
-  date: todayISO(),
-  note: '',
-  tags: [],
+const toForm = (initial, categories) => {
+  const catDefs = categories[initial?.type || TYPES.EXPENSE] || DEFAULT_CATEGORIES[initial?.type] || []
+  const base = {
+    type: TYPES.EXPENSE,
+    amount: '',
+    category: catDefs[0]?.id || DEFAULT_CATEGORIES.expense[0].id,
+    date: todayISO(),
+    note: '',
+    tags: [],
+  }
+  return initial
+    ? { ...base, ...initial, amount: formatAmountInput(String(initial.amount ?? '')) }
+    : base
 }
 
-const inputCls =
-  'w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200'
-
-const onlyDigits = (s) => s.replace(/\D/g, '')
-
-const formatAmount = (s) => {
-  const digits = onlyDigits(s).replace(/^0+(?=\d)/, '')
-  return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
-}
-
-const toForm = (initial) =>
-  initial
-    ? { ...emptyForm, ...initial, amount: formatAmount(String(initial.amount ?? '')) }
-    : emptyForm
-
-export default function TransactionForm({ initial, onSubmit, onCancel, suggestedTags }) {
-  const [form, setForm] = useState(() => toForm(initial))
+export default function TransactionForm({ initial, onSubmit, onCancel, suggestedTags, categories }) {
+  const [form, setForm] = useState(() => toForm(initial, categories))
+  const [calcOpen, setCalcOpen] = useState(false)
 
   useEffect(() => {
-    setForm(toForm(initial))
-  }, [initial])
+    setForm(toForm(initial, categories))
+  }, [initial, categories])
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
 
   const handleAmountChange = (e) => {
     const raw = e.target.value
-    const formatted = formatAmount(raw)
+    const formatted = formatAmountInput(raw)
     const caret = e.target.selectionStart ?? raw.length
     const digitsBefore = onlyDigits(raw.slice(0, caret)).length
 
@@ -60,12 +54,22 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
     })
   }
 
+  useEffect(() => {
+    if (initial) return
+    setForm((f) => {
+      const list = categories[f.type] || DEFAULT_CATEGORIES[f.type] || []
+      if (list.some((c) => c.id === f.category)) return f
+      return { ...f, category: list[0]?.id || DEFAULT_CATEGORIES.expense[0].id }
+    })
+  }, [categories, initial])
+
   const switchType = (type) => {
-    const fallback = CATEGORIES[type][0].id
+    const list = categories[type] || DEFAULT_CATEGORIES[type] || []
+    const fallback = list[0]?.id || DEFAULT_CATEGORIES.expense[0].id
     setForm((f) => ({
       ...f,
       type,
-      category: CATEGORIES[type].some((c) => c.id === f.category) ? f.category : fallback,
+      category: list.some((c) => c.id === f.category) ? f.category : fallback,
     }))
   }
 
@@ -75,12 +79,17 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
     if (!form.date || !amount || amount <= 0) return
     onSubmit({ ...form, amount, tags: form.tags })
     if (!isEdit) {
-      setForm((f) => ({
-        ...emptyForm,
-        type: f.type,
-        date: f.date,
-        category: CATEGORIES[f.type][0].id,
-      }))
+      setForm((f) => {
+        const list = categories[f.type] || DEFAULT_CATEGORIES[f.type] || []
+        return {
+          type: f.type,
+          amount: '',
+          category: list[0]?.id || DEFAULT_CATEGORIES.expense[0].id,
+          date: f.date,
+          note: '',
+          tags: [],
+        }
+      })
     }
   }
 
@@ -150,7 +159,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
       {/* Jumlah + Tanggal */}
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-600">Jumlah</label>
+          <label htmlFor="form-amount" className="mb-1.5 block text-sm font-medium text-slate-600">Jumlah</label>
           <div className="relative">
             <span
               className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold ${
@@ -160,24 +169,57 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
               Rp
             </span>
             <input
+              id="form-amount"
               type="text"
               inputMode="numeric"
               autoComplete="off"
               value={form.amount}
               onChange={handleAmountChange}
               placeholder="100.000"
-              className={`${inputCls} pl-11`}
+              className={`${INPUT_CLS} pl-11 pr-12`}
               required
             />
+            <button
+              type="button"
+              onClick={() => setCalcOpen((o) => !o)}
+              aria-label={calcOpen ? 'Tutup kalkulator' : 'Buka kalkulator'}
+              title="Kalkulator"
+              className={`absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-lg transition ${
+                calcOpen
+                  ? 'bg-brand-500 text-white shadow-sm'
+                  : 'text-slate-500 hover:bg-brand-50 hover:text-brand-600'
+              }`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <rect x="5" y="2" width="14" height="20" rx="2" />
+                <path strokeLinecap="round" d="M8 6h8" />
+                <path
+                  strokeLinecap="round"
+                  d="M8 11h.01M12 11h.01M16 11h.01M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01M16 17h.01"
+                />
+              </svg>
+            </button>
           </div>
+          {calcOpen && (
+            <div className="mt-2">
+              <Calculator
+                onApply={(value) => {
+                  set('amount', formatAmountInput(String(value)))
+                  setCalcOpen(false)
+                }}
+                onClose={() => setCalcOpen(false)}
+              />
+            </div>
+          )}
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-600">Tanggal</label>
+          <label htmlFor="form-date" className="mb-1.5 block text-sm font-medium text-slate-600">Tanggal</label>
           <input
+            id="form-date"
             type="date"
             value={form.date}
             onChange={(e) => set('date', e.target.value)}
-            className={inputCls}
+            className={INPUT_CLS}
             required
           />
         </div>
@@ -185,23 +227,29 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
 
       {/* Kategori */}
       <div className="mt-5">
-        <p className="mb-2 text-sm font-medium text-slate-600">Kategori</p>
-        <div className="grid grid-cols-1 gap-2">
-          {CATEGORIES[form.type].map((c) => (
+        <p id="form-category-label" className="mb-2 text-sm font-medium text-slate-600">Kategori</p>
+        <div role="radiogroup" aria-labelledby="form-category-label" className="grid grid-cols-2 gap-2">
+          {(categories[form.type] || DEFAULT_CATEGORIES[form.type] || []).map((c) => (
             <button
               key={c.id}
               type="button"
+              role="radio"
+              aria-checked={form.category === c.id}
               onClick={() => set('category', c.id)}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition ${
+              className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition ${
                 form.category === c.id
                   ? 'border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-300'
                   : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke={c.color} strokeWidth="2" className="h-5 w-5 shrink-0">
-                <path strokeLinecap="round" strokeLinejoin="round" d={CATEGORY_ICONS[c.id]} />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d={CATEGORY_ICONS[c.icon] || CATEGORY_ICONS[c.id] || CATEGORY_ICONS.lainnya}
+                />
               </svg>
-              <span className="min-w-0 flex-1 leading-snug">{c.label}</span>
+              <span className="min-w-0 flex-1 truncate leading-snug">{c.label}</span>
             </button>
           ))}
         </div>
@@ -209,20 +257,21 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
 
       {/* Catatan */}
       <div className="mt-5">
-        <label className="mb-1.5 block text-sm font-medium text-slate-600">Catatan</label>
+        <label htmlFor="form-note" className="mb-1.5 block text-sm font-medium text-slate-600">Catatan</label>
         <input
+          id="form-note"
           type="text"
           value={form.note}
           onChange={(e) => set('note', e.target.value)}
           placeholder="Contoh: Belanja mingguan di pasar"
-          className={inputCls}
+          className={INPUT_CLS}
         />
       </div>
 
       {/* Tags */}
       <div className="mt-5">
-        <label className="mb-1.5 block text-sm font-medium text-slate-600">Tag</label>
-        <TagInput value={form.tags} onChange={(tags) => set('tags', tags)} suggestions={suggestedTags} />
+        <label htmlFor="form-tags" className="mb-1.5 block text-sm font-medium text-slate-600">Tag</label>
+        <TagInput id="form-tags" value={form.tags} onChange={(tags) => set('tags', tags)} suggestions={suggestedTags} />
       </div>
 
       <button

@@ -6,6 +6,23 @@ export function formatCurrency(value) {
   }).format(value || 0)
 }
 
+export const onlyDigits = (s) => s.replace(/\D/g, '')
+
+export function formatAmountInput(s) {
+  const digits = onlyDigits(s).replace(/^0+(?=\d)/, '')
+  return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+}
+
+export function slugify(s) {
+  const base = s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return base || null
+}
+
 export function formatNumber(value) {
   return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value || 0)
 }

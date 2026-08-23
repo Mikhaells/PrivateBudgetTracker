@@ -1,23 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import './lib/chartSetup'
-import { CATEGORIES, SEEDED_KEY } from './lib/constants'
+import { DEFAULT_CATEGORIES, SEEDED_KEY, TYPES } from './lib/constants'
 import {
   clearAll,
   createSeedTransactions,
+  loadCategories,
   loadTags,
   loadTransactions,
+  saveCategories,
   saveTags,
   saveTransactions,
   uid,
 } from './lib/store'
 import { summarize, expenseByCategory, monthlyComparison, allTags } from './lib/analytics'
 import { exportCSV, exportPDF } from './lib/export'
-import { formatCurrency } from './lib/format'
 import SummaryCards from './components/SummaryCards'
 import TransactionForm from './components/TransactionForm'
 import FilterBar from './components/FilterBar'
 import TransactionList from './components/TransactionList'
 import ExportDropdown from './components/ExportDropdown'
+import BudgetPanel from './components/BudgetPanel'
+import CategoryManager from './components/CategoryManager'
+import ConfirmDialog from './components/ConfirmDialog'
 import { ChartEmpty, ExpenseBar, ExpenseDoughnut, MonthlyBar } from './components/Charts'
 
 const DEFAULT_FILTERS = {
@@ -27,6 +32,14 @@ const DEFAULT_FILTERS = {
   to: '',
   search: '',
   preset: 'all',
+}
+
+// Pastikan setiap kategori punya field `type` (data lama mungkin belum memilikinya).
+function normalizeCategories(cats) {
+  return {
+    expense: (cats.expense || []).map((c) => ({ ...c, type: TYPES.EXPENSE })),
+    income: (cats.income || []).map((c) => ({ ...c, type: TYPES.INCOME })),
+  }
 }
 
 export default function App() {
@@ -41,11 +54,21 @@ export default function App() {
     }
     return []
   })
+  const [categories, setCategories] = useState(() => {
+    const stored = loadCategories()
+    if (stored) return normalizeCategories(stored)
+    const seed = normalizeCategories(JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)))
+    saveCategories(seed)
+    return seed
+  })
+  const [showCategories, setShowCategories] = useState(false)
   const [tags, setTags] = useState(() => loadTags())
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [editing, setEditing] = useState(null)
   const [toast, setToast] = useState(null)
+  const [confirmReset, setConfirmReset] = useState(false)
   const toastTimer = useRef(null)
+  const toastId = useRef(0)
   const formRef = useRef(null)
 
   useEffect(() => {
@@ -54,13 +77,20 @@ export default function App() {
     }
   }, [editing])
 
-  const showToast = (message, type = 'success') => {
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  const showToast = (message, type = 'success', action = null) => {
     clearTimeout(toastTimer.current)
-    setToast({ message, type })
-    toastTimer.current = setTimeout(() => setToast(null), 2600)
+    toastId.current += 1
+    setToast({ id: toastId.current, message, type, action })
+    toastTimer.current = setTimeout(() => setToast(null), action ? 6000 : 2600)
   }
 
-  const catLabel = (type, id) => CATEGORIES[type]?.find((c) => c.id === id)?.label || id || '-'
+  const catLabel = (type, id) => categories[type]?.find((c) => c.id === id)?.label || id || '-'
+
+  useEffect(() => {
+    saveCategories(categories)
+  }, [categories])
 
   useEffect(() => {
     saveTransactions(transactions)
@@ -88,14 +118,14 @@ export default function App() {
   }, [transactions, filters])
 
   const summary = useMemo(() => summarize(filtered), [filtered])
-  const doughnutData = useMemo(() => expenseByCategory(filtered), [filtered])
+  const doughnutData = useMemo(() => expenseByCategory(filtered, categories), [filtered, categories])
   const monthly = useMemo(() => monthlyComparison(filtered), [filtered])
-  const expenseBarData = useMemo(() => expenseByCategory(filtered), [filtered])
+  const expenseBarData = useMemo(() => expenseByCategory(filtered, categories), [filtered, categories])
   const filterCategories = useMemo(() => {
     const map = new Map()
-    for (const c of [...CATEGORIES.expense, ...CATEGORIES.income]) map.set(c.id, c)
+    for (const c of [...categories.expense, ...categories.income]) map.set(c.id, c)
     return [...map.values()]
-  }, [])
+  }, [categories])
 
   const handleAdd = (data) => {
     const t = { ...data, id: uid(), createdAt: Date.now() }
@@ -113,44 +143,99 @@ export default function App() {
   }
 
   const handleDelete = (t) => {
-    if (!window.confirm(`Hapus transaksi "${t.note || catLabel(t.type, t.category)}" sebesar ${formatCurrency(t.amount)}?`)) return
     setTransactions((prev) => prev.filter((x) => x.id !== t.id))
-    showToast('Transaksi dihapus', 'danger')
+    showToast(`Transaksi "${t.note || catLabel(t.type, t.category)}" dihapus`, 'danger', {
+      label: 'Urungkan',
+      onClick: () => {
+        clearTimeout(toastTimer.current)
+        setTransactions((prev) => [t, ...prev.filter((x) => x.id !== t.id)])
+        setToast(null)
+        showToast('Transaksi dikembalikan')
+      },
+    })
+  }
+
+  const handleSaveCategory = (category, isNew) => {
+    setCategories((prev) => {
+      const list = [...prev[category.type]]
+      const idx = list.findIndex((c) => c.id === category.id)
+      if (idx >= 0) list[idx] = category
+      else list.push(category)
+      return { ...prev, [category.type]: list.sort((a, b) => a.label.localeCompare(b.label)) }
+    })
+    showToast(
+      isNew ? `Kategori "${category.label}" berhasil ditambahkan` : `Kategori "${category.label}" diperbarui`
+    )
+  }
+
+  const handleDeleteCategory = (category) => {
+    if (
+      !window.confirm(
+        `Hapus kategori "${category.label}"? Transaksi lama dengan kategori ini tetap tersimpan dan ditampilkan sebagai "${category.id}".`
+      )
+    ) {
+      return
+    }
+    setCategories((prev) => ({
+      ...prev,
+      [category.type]: prev[category.type].filter((c) => c.id !== category.id),
+    }))
+    showToast(`Kategori "${category.label}" dihapus`, 'danger')
   }
 
   const handleReset = () => {
-    if (!window.confirm('Hapus SEMUA data? Tindakan ini tidak bisa dibatalkan.')) return
     clearAll()
     setTransactions([])
     setTags([])
     setEditing(null)
     setFilters(DEFAULT_FILTERS)
+    setConfirmReset(false)
+    showToast('Semua data telah dihapus', 'danger')
   }
 
-  const handleExportCsv = () => exportCSV(filtered)
-  const handleExportPdf = () => exportPDF(filtered, summary)
+  const handleExportCsv = () => exportCSV(filtered, categories)
+  const handleExportPdf = () => exportPDF(filtered, summary, categories)
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <MotionConfig reducedMotion="user">
+      <div className="flex min-h-screen flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-navy-900/90 shadow-lg shadow-navy-900/10 backdrop-blur">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-brand-500 via-emerald-400 to-brand-500" />
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:py-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg shadow-brand-600/30">
+            <motion.div
+              animate={{ rotateY: [-14, 14, -14], rotateX: [8, -8, 8] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              whileHover={{ rotateY: 360, rotateX: 0, transition: { duration: 0.9, ease: 'easeInOut' } }}
+              style={{ transformStyle: 'preserve-3d' }}
+              className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg shadow-brand-600/30"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m4-4H8m-4 4a8 8 0 1 1 16 0 8 8 0 0 1-16 0z" />
               </svg>
               <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-navy-900" />
-            </div>
+            </motion.div>
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-extrabold tracking-tight text-white">Budget Tracker</h1>
+              <h1 className="truncate text-lg font-bold tracking-tight text-white">Budget Tracker</h1>
               <p className="hidden truncate text-xs text-slate-400 sm:block">
                 Dashboard keuangan pribadi — data tersimpan di browser
               </p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCategories(true)}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-brand-200 sm:px-3"
+              title="Kelola kategori & anggaran"
+              aria-label="Kelola kategori & anggaran"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h10M4 18h6" />
+              </svg>
+              <span className="hidden sm:inline">Kategori</span>
+            </button>
             <ExportDropdown
               onExportCsv={handleExportCsv}
               onExportPdf={handleExportPdf}
@@ -158,7 +243,7 @@ export default function App() {
             />
             <button
               type="button"
-              onClick={handleReset}
+              onClick={() => setConfirmReset(true)}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 sm:px-3"
               title="Hapus semua data"
               aria-label="Hapus semua data"
@@ -188,12 +273,19 @@ export default function App() {
               onSubmit={editing ? handleUpdate : handleAdd}
               onCancel={() => setEditing(null)}
               suggestedTags={tags}
+              categories={categories}
             />
           </div>
 
           {/* Grafik */}
           <div className="space-y-6 lg:col-span-2">
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <motion.div
+              initial={{ opacity: 0, y: 28, rotateX: -10 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ delay: 0.25, type: 'spring', stiffness: 100, damping: 16 }}
+              style={{ transformPerspective: 1200 }}
+              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+            >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
@@ -208,10 +300,16 @@ export default function App() {
                 </span>
               </div>
               {doughnutData.length ? <ExpenseDoughnut data={doughnutData} /> : <ChartEmpty message="Tidak ada data pengeluaran pada filter ini." />}
-            </div>
+            </motion.div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+              <motion.div
+                initial={{ opacity: 0, y: 28, rotateY: -12 }}
+                animate={{ opacity: 1, y: 0, rotateY: 0 }}
+                transition={{ delay: 0.38, type: 'spring', stiffness: 100, damping: 16 }}
+                style={{ transformPerspective: 1200 }}
+                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+              >
                 <div className="mb-4 flex items-center gap-2">
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -224,8 +322,14 @@ export default function App() {
                   Sesuai filter aktif
                 </span>
                 {expenseBarData.length ? <ExpenseBar data={expenseBarData} /> : <ChartEmpty message="Tidak ada data." />}
-              </div>
-              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 28, rotateY: 12 }}
+                animate={{ opacity: 1, y: 0, rotateY: 0 }}
+                transition={{ delay: 0.46, type: 'spring', stiffness: 100, damping: 16 }}
+                style={{ transformPerspective: 1200 }}
+                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+              >
                 <div className="mb-4 flex items-center gap-2">
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -238,21 +342,33 @@ export default function App() {
                   Sesuai filter aktif
                 </span>
                 {monthly.labels.length ? <MonthlyBar labels={monthly.labels} income={monthly.income} expense={monthly.expense} /> : <ChartEmpty message="Tidak ada data." />}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
 
+        {/* Anggaran bulan ini */}
+        <BudgetPanel
+          categories={categories}
+          transactions={transactions}
+          onManage={() => setShowCategories(true)}
+        />
+
         {/* Filter + Daftar */}
         <div className="space-y-4">
           <FilterBar filters={filters} onChange={setFilters} categories={filterCategories} />
-          <TransactionList transactions={filtered} onEdit={setEditing} onDelete={handleDelete} />
+          <TransactionList
+            transactions={filtered}
+            onEdit={setEditing}
+            onDelete={handleDelete}
+            categories={categories}
+          />
         </div>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white/60 py-6 text-center text-xs text-slate-400 backdrop-blur">
+      <footer className="border-t border-slate-200 bg-white/80 py-6 text-center text-xs text-slate-500 backdrop-blur">
         <p>
-          Budget Tracker — dibangun dengan React, Tailwind CSS &amp; Chart.js.
+          Budget Tracker — dibangun dengan React, Tailwind CSS, Chart.js &amp; Motion.
         </p>
         <p className="mt-1">Data disimpan lokal di browser (LocalStorage) &amp; tidak pernah dikirim ke server.</p>
       </footer>
@@ -260,37 +376,76 @@ export default function App() {
       {/* Toast notifikasi */}
       <div
         aria-live="polite"
-        className={`pointer-events-none fixed inset-x-4 bottom-4 z-50 flex justify-center transition-all duration-300 sm:justify-end sm:pr-6 ${
-          toast ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}
+        className="pointer-events-none fixed inset-x-4 bottom-4 z-50 flex justify-center sm:justify-end sm:pr-6"
       >
-        {toast && (
-          <div
-            className={`pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl px-4 py-3.5 shadow-xl ring-1 backdrop-blur ${
-              toast.type === 'danger'
-                ? 'bg-rose-950/95 text-white ring-rose-400/30'
-                : 'bg-navy-900/95 text-white ring-white/15'
-            }`}
-          >
-            <span
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
-                toast.type === 'danger' ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 32, rotateX: -45, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, rotateX: 30, scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+              style={{ transformPerspective: 600, transformOrigin: 'bottom center' }}
+              className={`pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl px-4 py-3.5 shadow-xl ring-1 backdrop-blur ${
+                toast.type === 'danger'
+                  ? 'bg-rose-950/95 text-white ring-rose-400/30'
+                  : 'bg-navy-900/95 text-white ring-white/15'
               }`}
             >
-              {toast.type === 'danger' ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
-                </svg>
+              <span
+                className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                  toast.type === 'danger' ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
+                }`}
+              >
+                {toast.type === 'danger' ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
+                  </svg>
+                )}
+              </span>
+              <p className="min-w-0 flex-1 text-sm font-medium">{toast.message}</p>
+              {toast.action && (
+                <button
+                  type="button"
+                  onClick={toast.action.onClick}
+                  className="shrink-0 cursor-pointer rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-300 ring-1 ring-white/15 transition hover:bg-white/20"
+                >
+                  {toast.action.label}
+                </button>
               )}
-            </span>
-            <p className="min-w-0 text-sm font-medium">{toast.message}</p>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {showCategories && (
+        <CategoryManager
+          categories={categories}
+          onSave={handleSaveCategory}
+          onDelete={handleDeleteCategory}
+          onClose={() => setShowCategories(false)}
+        />
+      )}
+
+      <AnimatePresence>
+        {confirmReset && (
+          <ConfirmDialog
+            open
+            title="Hapus semua data?"
+            message="Semua transaksi, kategori tambahan, dan anggaran akan dihapus permanen dari browser ini. Tindakan ini tidak bisa dibatalkan."
+            confirmLabel="Ya, hapus semua"
+            cancelLabel="Batal"
+            onConfirm={handleReset}
+            onCancel={() => setConfirmReset(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+    </MotionConfig>
   )
 }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 const normalize = (s) => s.trim().toLowerCase()
 
-export default function TagInput({ value, onChange, suggestions }) {
+export default function TagInput({ value, onChange, suggestions, id }) {
   const [draft, setDraft] = useState('')
 
   const filtered = useMemo(() => {
@@ -49,6 +49,7 @@ export default function TagInput({ value, onChange, suggestions }) {
           </span>
         ))}
         <input
+          id={id}
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}

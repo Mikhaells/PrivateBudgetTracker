@@ -66,7 +66,7 @@ export function ExpenseDoughnut({ data }) {
     <div className={`relative ${isMobile ? 'h-[22rem]' : 'h-72'}`}>
       <Doughnut data={chartData} options={options} />
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-xs font-medium text-slate-400">Total Pengeluaran</p>
+        <p className="text-xs font-medium text-slate-500">Total Pengeluaran</p>
         <p className="mt-1 text-xl font-bold tabular-nums text-slate-800">
           {total ? formatCurrency(total) : '—'}
         </p>
@@ -101,12 +101,12 @@ export function ExpenseBar({ data }) {
       tooltip: { ...baseTooltip, callbacks: { label: (ctx) => ` ${formatCurrency(ctx.parsed.y)}` } },
     },
     scales: {
-      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10, weight: 500 } } },
+      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 11, weight: 500 } } },
       y: {
         beginAtZero: true,
         grid: { color: 'rgba(148, 163, 184, 0.15)' },
         border: { display: false },
-        ticks: { callback: (v) => formatNumber(v), font: { size: 10 } },
+        ticks: { callback: (v) => formatNumber(v), font: { size: 11 } },
       },
     },
   }
@@ -142,12 +142,12 @@ export function MonthlyBar({ labels, income, expense }) {
       },
     },
     scales: {
-      x: { grid: { display: false }, ticks: { font: { size: 10, weight: 500 } } },
+      x: { grid: { display: false }, ticks: { font: { size: 11, weight: 500 } } },
       y: {
         beginAtZero: true,
         grid: { color: 'rgba(148, 163, 184, 0.15)' },
         border: { display: false },
-        ticks: { callback: (v) => formatNumber(v), font: { size: 10 } },
+        ticks: { callback: (v) => formatNumber(v), font: { size: 11 } },
       },
     },
   }
@@ -161,7 +161,7 @@ export function MonthlyBar({ labels, income, expense }) {
 
 export function ChartEmpty({ message }) {
   return (
-    <div className="grid h-72 place-items-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 text-sm text-slate-400">
+    <div className="grid h-72 place-items-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 text-sm text-slate-500">
       <div className="flex flex-col items-center gap-2">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-slate-300">
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 15l4-4 3 3 5-6" />

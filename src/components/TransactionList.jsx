@@ -1,9 +1,22 @@
-import { CATEGORIES, CATEGORY_ICONS, TYPES, TYPE_LABELS } from '../lib/constants'
+import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
+import { CATEGORY_ICONS, TYPES, TYPE_LABELS } from '../lib/constants'
 import { formatCurrency, formatDate } from '../lib/format'
 
-function catMeta(type, id) {
-  const defs = CATEGORIES[type] || []
-  return defs.find((c) => c.id === id) || { id, label: id, color: '#64748b' }
+const PAGE_SIZE = 25
+
+function rowEntrance(i) {
+  return {
+    initial: { opacity: 0, y: 18, rotateX: -8 },
+    whileInView: { opacity: 1, y: 0, rotateX: 0 },
+    viewport: { once: true, amount: 0.15 },
+    transition: { delay: Math.min(i * 0.04, 0.4), type: 'spring', stiffness: 160, damping: 20 },
+  }
+}
+
+function catMeta(type, id, categories) {
+  const defs = categories?.[type] || []
+  return defs.find((c) => c.id === id) || { id, label: id, color: '#64748b', icon: 'lainnya' }
 }
 
 function EmptyState() {
@@ -19,7 +32,7 @@ function EmptyState() {
         </svg>
       </span>
       <p className="mt-4 text-sm font-semibold text-slate-600">Belum ada transaksi yang cocok.</p>
-      <p className="mt-1 text-xs text-slate-400">Coba ubah filter, atau tambahkan transaksi baru lewat form di atas.</p>
+      <p className="mt-1 text-xs text-slate-500">Coba ubah filter, atau tambahkan transaksi baru lewat form di atas.</p>
     </div>
   )
 }
@@ -43,25 +56,29 @@ function ActionButton({ label, tone, onClick, icon }) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`grid h-10 w-10 cursor-pointer place-items-center rounded-lg text-slate-400 transition active:scale-95 ${tone}`}
+      className={`grid h-10 w-10 cursor-pointer place-items-center rounded-lg text-slate-500 transition active:scale-95 ${tone}`}
     >
       {icon}
     </button>
   )
 }
 
-function MobileCard({ t, onEdit, onDelete }) {
-  const meta = catMeta(t.type, t.category)
+function MobileCard({ t, onEdit, onDelete, categories, index }) {
+  const meta = catMeta(t.type, t.category, categories)
   const income = t.type === TYPES.INCOME
 
   return (
-    <li className="flex items-start gap-3 border-b border-slate-100 px-4 py-3.5 transition-colors last:border-0 hover:bg-brand-50/40">
+    <motion.li
+      {...rowEntrance(index)}
+      style={{ transformPerspective: 700 }}
+      className="flex items-start gap-3 border-b border-slate-100 px-4 py-3.5 transition-colors last:border-0 hover:bg-brand-50/40"
+    >
       <span
         className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl"
         style={{ backgroundColor: `${meta.color}1a`, color: meta.color }}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d={CATEGORY_ICONS[meta.id] || CATEGORY_ICONS.lainnya} />
+          <path strokeLinecap="round" strokeLinejoin="round" d={CATEGORY_ICONS[meta.icon] || CATEGORY_ICONS[meta.id] || CATEGORY_ICONS.lainnya} />
         </svg>
       </span>
 
@@ -73,18 +90,18 @@ function MobileCard({ t, onEdit, onDelete }) {
           </p>
         </div>
         <p className="mt-0.5 truncate text-xs text-slate-500">
-          {t.note || <span className="text-slate-400">Tanpa catatan</span>}
+          {t.note || <span className="text-slate-500">Tanpa catatan</span>}
         </p>
         {t.tags?.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
             {t.tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600">
+              <span key={tag} className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-600">
                 #{tag}
               </span>
             ))}
           </div>
         )}
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-xs text-slate-500">
           {formatDate(t.date)} · {income ? 'Pemasukan' : 'Pengeluaran'}
         </p>
       </div>
@@ -103,16 +120,24 @@ function MobileCard({ t, onEdit, onDelete }) {
           icon={ACTIONS.trash}
         />
       </div>
-    </li>
+    </motion.li>
   )
 }
 
-export default function TransactionList({ transactions, onEdit, onDelete }) {
+export default function TransactionList({ transactions, onEdit, onDelete, categories }) {
+  const [visible, setVisible] = useState(PAGE_SIZE)
+
+  useEffect(() => {
+    setVisible(PAGE_SIZE)
+  }, [transactions])
+
   if (!transactions.length) return <EmptyState />
 
   const sorted = [...transactions].sort(
     (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.createdAt - a.createdAt)
   )
+  const shown = sorted.slice(0, visible)
+  const remaining = sorted.length - shown.length
 
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -132,8 +157,8 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
 
       {/* Mobile: kartu */}
       <ul className="divide-y divide-slate-50 md:hidden">
-        {sorted.map((t) => (
-          <MobileCard key={t.id} t={t} onEdit={onEdit} onDelete={onDelete} />
+        {shown.map((t, i) => (
+          <MobileCard key={t.id} t={t} index={i} onEdit={onEdit} onDelete={onDelete} categories={categories} />
         ))}
       </ul>
 
@@ -150,17 +175,19 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((t) => {
-              const meta = catMeta(t.type, t.category)
+            {shown.map((t, i) => {
+              const meta = catMeta(t.type, t.category, categories)
               const income = t.type === TYPES.INCOME
               return (
-                <tr
+                <motion.tr
                   key={t.id}
+                  {...rowEntrance(i)}
+                  style={{ transformPerspective: 700 }}
                   className="group border-b border-slate-50 transition-colors last:border-0 hover:bg-brand-50/40"
                 >
                   <td className="whitespace-nowrap px-5 py-3.5">
                     <p className="font-medium text-slate-700">{formatDate(t.date)}</p>
-                    <p className="text-xs text-slate-400">{income ? 'Pemasukan' : 'Pengeluaran'}</p>
+                    <p className="text-xs text-slate-500">{income ? 'Pemasukan' : 'Pengeluaran'}</p>
                   </td>
                   <td className="whitespace-nowrap px-5 py-3.5">
                     <span
@@ -169,19 +196,19 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
                       }`}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke={meta.color} strokeWidth="2" className="h-3.5 w-3.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d={CATEGORY_ICONS[meta.id] || CATEGORY_ICONS.lainnya} />
+                        <path strokeLinecap="round" strokeLinejoin="round" d={CATEGORY_ICONS[meta.icon] || CATEGORY_ICONS[meta.id] || CATEGORY_ICONS.lainnya} />
                       </svg>
                       {meta.label}
                     </span>
                   </td>
                   <td className="max-w-xs px-5 py-3.5">
                     <p className="truncate text-slate-700">
-                      {t.note || <span className="text-slate-400">Tanpa catatan</span>}
+                      {t.note || <span className="text-slate-500">Tanpa catatan</span>}
                     </p>
                     {t.tags?.length > 0 && (
                       <div className="mt-1 flex flex-wrap gap-1">
                         {t.tags.map((tag) => (
-                          <span key={tag} className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600">
+                          <span key={tag} className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-600">
                             #{tag}
                           </span>
                         ))}
@@ -207,12 +234,22 @@ export default function TransactionList({ transactions, onEdit, onDelete }) {
                       />
                     </div>
                   </td>
-                </tr>
+                </motion.tr>
               )
             })}
           </tbody>
         </table>
       </div>
+
+      {remaining > 0 && (
+        <button
+          type="button"
+          onClick={() => setVisible((v) => v + PAGE_SIZE)}
+          className="w-full cursor-pointer border-t border-slate-100 py-3.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50/60"
+        >
+          Muat {Math.min(PAGE_SIZE, remaining)} transaksi lagi (sisa {remaining})
+        </button>
+      )}
     </div>
   )
 }

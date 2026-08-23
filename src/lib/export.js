@@ -1,19 +1,19 @@
-import { CATEGORIES, TYPE_LABELS } from './constants'
+import { TYPE_LABELS } from './constants'
 import { formatCurrency, formatDate } from './format'
 
-function categoryLabel(type, id) {
-  const defs = CATEGORIES[type] || []
+function categoryLabel(type, id, categories) {
+  const defs = categories?.[type] || []
   return defs.find((c) => c.id === id)?.label || id || '-'
 }
 
-function rowsFrom(transactions) {
+function rowsFrom(transactions, categories) {
   return transactions
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .map((t) => ({
       Tanggal: formatDate(t.date),
       Tipe: TYPE_LABELS[t.type] || t.type,
-      Kategori: categoryLabel(t.type, t.category),
+      Kategori: categoryLabel(t.type, t.category, categories),
       Catatan: t.note || '-',
       Tag: (t.tags || []).join(', ') || '-',
       Jumlah: t.amount,
@@ -25,8 +25,8 @@ function toCSV(value) {
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
 }
 
-export function exportCSV(transactions, filename = 'transaksi') {
-  const rows = rowsFrom(transactions)
+export function exportCSV(transactions, categories, filename = 'transaksi') {
+  const rows = rowsFrom(transactions, categories)
   const header = ['Tanggal', 'Tipe', 'Kategori', 'Catatan', 'Tag', 'Jumlah']
   const lines = [
     header.join(','),
@@ -43,7 +43,7 @@ export function exportCSV(transactions, filename = 'transaksi') {
   URL.revokeObjectURL(url)
 }
 
-export async function exportPDF(transactions, summary, filename = 'laporan-keuangan') {
+export async function exportPDF(transactions, summary, categories, filename = 'laporan-keuangan') {
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -79,7 +79,7 @@ export async function exportPDF(transactions, summary, filename = 'laporan-keuan
   // Header tabel
   const headers = ['Tanggal', 'Tipe', 'Kategori', 'Catatan', 'Tag', 'Jumlah']
   const widths = [26, 24, 40, 40, 34, contentWidth - 26 - 24 - 40 - 40 - 34]
-  const rows = rowsFrom(transactions)
+  const rows = rowsFrom(transactions, categories)
 
   const drawHeader = (y) => {
     doc.setFont('helvetica', 'bold')
