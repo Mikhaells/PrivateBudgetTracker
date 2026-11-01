@@ -24,6 +24,7 @@ import BudgetPanel from './components/BudgetPanel'
 import CategoryManager from './components/CategoryManager'
 import ConfirmDialog from './components/ConfirmDialog'
 import { ChartEmpty, ExpenseBar, ExpenseDoughnut, MonthlyBar } from './components/Charts'
+import { CARD_CLS } from './lib/ui'
 
 const DEFAULT_FILTERS = {
   type: 'all',
@@ -200,8 +201,8 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-navy-900/90 shadow-lg shadow-navy-900/10 backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-brand-500 via-emerald-400 to-brand-500" />
+      <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/85 shadow-sm shadow-black/5 backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:py-4">
           <div className="flex min-w-0 items-center gap-3">
             <motion.div
@@ -209,16 +210,16 @@ export default function App() {
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               whileHover={{ rotateY: 360, rotateX: 0, transition: { duration: 0.9, ease: 'easeInOut' } }}
               style={{ transformStyle: 'preserve-3d' }}
-              className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg shadow-brand-600/30"
+              className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-strong text-white shadow-lg shadow-primary/25"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m4-4H8m-4 4a8 8 0 1 1 16 0 8 8 0 0 1-16 0z" />
               </svg>
-              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-navy-900" />
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-accent ring-2 ring-cream" />
             </motion.div>
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold tracking-tight text-white">Budget Tracker</h1>
-              <p className="hidden truncate text-xs text-slate-400 sm:block">
+              <h1 className="truncate text-lg font-bold tracking-tight text-ink">Budget Tracker</h1>
+              <p className="hidden truncate text-xs text-muted sm:block">
                 Dashboard keuangan pribadi — data tersimpan di browser
               </p>
             </div>
@@ -227,7 +228,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setShowCategories(true)}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-brand-200 sm:px-3"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface px-2.5 py-2.5 text-sm font-semibold text-ink transition hover:border-primary/30 hover:bg-cream/70 hover:text-primary sm:px-3"
               title="Kelola kategori & anggaran"
               aria-label="Kelola kategori & anggaran"
             >
@@ -244,7 +245,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-300 sm:px-3"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface px-2.5 py-2.5 text-sm font-semibold text-ink transition hover:border-expense/30 hover:bg-expense/5 hover:text-expense sm:px-3"
               title="Hapus semua data"
               aria-label="Hapus semua data"
             >
@@ -284,18 +285,18 @@ export default function App() {
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
               transition={{ delay: 0.25, type: 'spring', stiffness: 100, damping: 16 }}
               style={{ transformPerspective: 1200 }}
-              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+              className={`${CARD_CLS} p-5`}
             >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary/10 text-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4m0 4h.01" />
                     </svg>
                   </span>
-                  <h2 className="font-bold text-slate-800">Pengeluaran per Kategori</h2>
+                  <h2 className="font-bold text-ink">Pengeluaran per Kategori</h2>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
                   Sesuai filter aktif
                 </span>
               </div>
@@ -308,17 +309,17 @@ export default function App() {
                 animate={{ opacity: 1, y: 0, rotateY: 0 }}
                 transition={{ delay: 0.38, type: 'spring', stiffness: 100, damping: 16 }}
                 style={{ transformPerspective: 1200 }}
-                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+                className={`${CARD_CLS} p-5`}
               >
                 <div className="mb-4 flex items-center gap-2">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary/10 text-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 15l4-4 3 3 5-6" />
                     </svg>
                   </span>
-                  <h2 className="font-bold text-slate-800">Distribusi Pengeluaran</h2>
+                  <h2 className="font-bold text-ink">Distribusi Pengeluaran</h2>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
                   Sesuai filter aktif
                 </span>
                 {expenseBarData.length ? <ExpenseBar data={expenseBarData} /> : <ChartEmpty message="Tidak ada data." />}
@@ -328,17 +329,17 @@ export default function App() {
                 animate={{ opacity: 1, y: 0, rotateY: 0 }}
                 transition={{ delay: 0.46, type: 'spring', stiffness: 100, damping: 16 }}
                 style={{ transformPerspective: 1200 }}
-                className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+                className={`${CARD_CLS} p-5`}
               >
                 <div className="mb-4 flex items-center gap-2">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary/10 text-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 12l4-4 3 3 5-6" />
                     </svg>
                   </span>
-                  <h2 className="font-bold text-slate-800">Pemasukan vs Pengeluaran</h2>
+                  <h2 className="font-bold text-ink">Pemasukan vs Pengeluaran</h2>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
                   Sesuai filter aktif
                 </span>
                 {monthly.labels.length ? <MonthlyBar labels={monthly.labels} income={monthly.income} expense={monthly.expense} /> : <ChartEmpty message="Tidak ada data." />}
@@ -366,7 +367,7 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white/80 py-6 text-center text-xs text-slate-500 backdrop-blur">
+      <footer className="border-t border-line/70 bg-cream/70 py-6 text-center text-xs text-muted backdrop-blur">
         <p>
           Budget Tracker — dibangun dengan React, Tailwind CSS, Chart.js &amp; Motion.
         </p>
@@ -389,13 +390,13 @@ export default function App() {
               style={{ transformPerspective: 600, transformOrigin: 'bottom center' }}
               className={`pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl px-4 py-3.5 shadow-xl ring-1 backdrop-blur ${
                 toast.type === 'danger'
-                  ? 'bg-rose-950/95 text-white ring-rose-400/30'
-                  : 'bg-navy-900/95 text-white ring-white/15'
+                  ? 'bg-expense text-white ring-expense/30'
+                  : 'bg-surface/95 text-ink ring-line'
               }`}
             >
               <span
                 className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
-                  toast.type === 'danger' ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
+                  toast.type === 'danger' ? 'bg-white/15 text-white' : 'bg-income/10 text-income'
                 }`}
               >
                 {toast.type === 'danger' ? (
@@ -413,7 +414,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={toast.action.onClick}
-                  className="shrink-0 cursor-pointer rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-300 ring-1 ring-white/15 transition hover:bg-white/20"
+                  className="shrink-0 cursor-pointer rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-primary-strong"
                 >
                   {toast.action.label}
                 </button>

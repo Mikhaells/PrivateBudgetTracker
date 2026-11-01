@@ -36,9 +36,9 @@ function evaluate(tokens, current) {
 }
 
 const digitKey =
-  'cursor-pointer rounded-lg bg-white py-2 text-sm font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-100 active:scale-95'
+  'cursor-pointer rounded-lg bg-surface py-2 text-sm font-bold text-ink ring-1 ring-line transition hover:bg-cream active:scale-95'
 const opKey =
-  'cursor-pointer rounded-lg bg-brand-100 py-2 text-sm font-bold text-brand-700 transition hover:bg-brand-200 active:scale-95'
+  'cursor-pointer rounded-lg bg-primary/10 py-2 text-sm font-bold text-primary transition hover:bg-primary/20 active:scale-95'
 
 export default function Calculator({ onApply, onClose }) {
   const [tokens, setTokens] = useState([])
@@ -132,14 +132,14 @@ export default function Calculator({ onApply, onClose }) {
         : '0'
 
   return (
-    <div className="animate-[count-up_0.18s_ease-out] select-none rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
+    <div className="animate-[count-up_0.18s_ease-out] select-none rounded-xl border border-line bg-surface-2 p-3 shadow-sm shadow-black/5">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Kalkulator</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Kalkulator</span>
         <button
           type="button"
           onClick={onClose}
           aria-label="Tutup kalkulator"
-          className="cursor-pointer rounded-md p-1 text-slate-500 transition hover:bg-slate-200 hover:text-slate-600"
+          className="cursor-pointer rounded-md p-1 text-muted transition hover:bg-line/60 hover:text-ink"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M18 6 6 18M6 6l12 12" />
@@ -147,11 +147,11 @@ export default function Calculator({ onApply, onClose }) {
         </button>
       </div>
 
-      <div className="rounded-lg bg-white px-3 py-2 text-right ring-1 ring-slate-200">
-        <div className="truncate text-xs text-slate-500">{exprLine}</div>
-        <div className={`truncate text-xl font-bold ${isError ? 'text-rose-500' : 'text-slate-800'}`}>{mainLine}</div>
+      <div className="rounded-lg bg-surface px-3 py-2 text-right ring-1 ring-line">
+        <div className="truncate text-xs text-muted">{exprLine}</div>
+        <div className={`truncate text-xl font-bold ${isError ? 'text-expense' : 'text-ink'}`}>{mainLine}</div>
         {hasPending && !isError && (
-          <div className="mt-0.5 text-xs font-semibold text-emerald-600">= {formatNumber(total)}</div>
+          <div className="mt-0.5 text-xs font-semibold text-income">= {formatNumber(total)}</div>
         )}
       </div>
 
@@ -159,7 +159,7 @@ export default function Calculator({ onApply, onClose }) {
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer rounded-lg bg-rose-100 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
+          className="cursor-pointer rounded-lg bg-expense/10 py-2 text-sm font-bold text-expense transition hover:bg-expense/20 active:scale-95"
         >
           C
         </button>
@@ -191,7 +191,7 @@ export default function Calculator({ onApply, onClose }) {
         <button
           type="button"
           onClick={pressEquals}
-          className="col-span-2 cursor-pointer rounded-lg bg-emerald-500 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-600 active:scale-95"
+          className="col-span-2 cursor-pointer rounded-lg bg-accent py-2 text-sm font-bold text-white shadow-sm transition hover:bg-accent-strong active:scale-95"
         >
           =
         </button>
@@ -201,7 +201,7 @@ export default function Calculator({ onApply, onClose }) {
         type="button"
         onClick={apply}
         disabled={!canApply}
-        className="mt-2 w-full cursor-pointer rounded-lg bg-brand-500 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-brand-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-2 w-full cursor-pointer rounded-lg bg-primary py-2 text-sm font-bold text-white shadow-sm transition hover:bg-primary-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
       >
         Gunakan Hasil
       </button>

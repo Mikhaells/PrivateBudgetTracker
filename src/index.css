@@ -2,31 +2,37 @@
 
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
-  --color-navy-900: #0f172a;
-  --color-navy-800: #1e293b;
+
+  /* ==== Palet referensi ==== */
+  --color-cream: #faf7f0; /* Background */
+  --color-surface: #ffffff; /* Surface / kartu */
+  --color-surface-2: #f4efe5; /* Surface sekunder (input, track) */
+  --color-line: #e6ddcd; /* Garis/border turunan */
+  --color-primary: #1f2937; /* Primary — Charcoal */
+  --color-primary-strong: #111827;
+  --color-primary-soft: #374151;
+  --color-accent: #d97706; /* Accent — Amber/Gold */
+  --color-accent-strong: #b45309;
+  --color-income: #059669; /* Income — Green */
+  --color-income-strong: #047857;
+  --color-expense: #dc2626; /* Expense — Red */
+  --color-expense-strong: #b91c1c;
+  --color-ink: #111827; /* Text */
+  --color-muted: #78716c; /* Muted (turunan hangat, selaras cream) */
 }
 
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  color-scheme: light;
 }
 
 body {
-  background-color: var(--color-slate-100);
-  color: var(--color-slate-800);
+  background-color: var(--color-cream);
+  color: var(--color-ink);
   background-image:
-    radial-gradient(60rem 30rem at 110% -10%, rgb(79 70 229 / 0.08), transparent 60%),
-    radial-gradient(50rem 26rem at -10% 0%, rgb(16 185 129 / 0.06), transparent 60%);
+    radial-gradient(60rem 30rem at 110% -10%, rgb(217 119 6 / 0.07), transparent 60%),
+    radial-gradient(50rem 26rem at -10% 0%, rgb(5 150 105 / 0.05), transparent 60%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -39,8 +45,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-brand-200);
-  color: var(--color-brand-900);
+  background: rgb(217 119 6 / 0.22);
+  color: #111827;
 }
 
 ::-webkit-scrollbar {
@@ -51,15 +57,15 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-slate-300);
+  background: #d8cebd;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-slate-400);
+  background: #b9ac97;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand-500);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 

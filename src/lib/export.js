@@ -56,21 +56,21 @@ export async function exportPDF(transactions, summary, categories, filename = 'l
 
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
-  doc.setTextColor(100)
+  doc.setTextColor(120, 113, 108)
   doc.text(`Dibuat: ${new Date().toLocaleString('id-ID')}  |  ${transactions.length} transaksi`, margin, 27)
 
   doc.setTextColor(0)
-  doc.setFillColor(16, 185, 129)
+  doc.setFillColor(5, 150, 105)
   doc.roundedRect(margin, 34, (contentWidth - 8) / 2, 16, 2, 2, 'F')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(11)
   doc.setTextColor(255)
   doc.text(`Pemasukan: ${formatCurrency(summary.income)}`, margin + 4, 45)
-  doc.setFillColor(244, 63, 94)
+  doc.setFillColor(220, 38, 38)
   doc.roundedRect(margin + (contentWidth + 8) / 2, 34, (contentWidth - 8) / 2, 16, 2, 2, 'F')
   doc.text(`Pengeluaran: ${formatCurrency(summary.expense)}`, margin + (contentWidth + 8) / 2 + 4, 45)
 
-  doc.setFillColor(30, 41, 59)
+  doc.setFillColor(31, 41, 55)
   doc.roundedRect(margin, 54, contentWidth, 16, 2, 2, 'F')
   doc.setTextColor(255)
   doc.text(`Saldo: ${formatCurrency(summary.income - summary.expense)}`, margin + 4, 65)
@@ -84,11 +84,11 @@ export async function exportPDF(transactions, summary, categories, filename = 'l
   const drawHeader = (y) => {
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9)
-    doc.setFillColor(241, 245, 249)
+    doc.setFillColor(244, 239, 229)
     doc.rect(margin, y, contentWidth, headerHeight, 'F')
     let x = margin
     headers.forEach((h, i) => {
-      doc.setTextColor(51, 65, 85)
+      doc.setTextColor(31, 41, 55)
       doc.text(h, x + 2, y + 6)
       x += widths[i]
     })
@@ -109,13 +109,13 @@ export async function exportPDF(transactions, summary, categories, filename = 'l
       top = newPageTop + headerHeight + gapAfterHeader
     }
     if (idx % 2 === 1) {
-      doc.setFillColor(248, 250, 252)
+      doc.setFillColor(250, 247, 240)
       doc.rect(margin, top, contentWidth, rowHeight, 'F')
     }
     const values = [r.Tanggal, r.Tipe, r.Kategori, r.Catatan, r.Tag, formatCurrency(r.Jumlah)]
     let x = margin
     values.forEach((v, i) => {
-      doc.setTextColor(30, 41, 59)
+      doc.setTextColor(17, 24, 39)
       doc.setFontSize(8.5)
       doc.text(String(v), x + 2, top + 6)
       x += widths[i]

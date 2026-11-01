@@ -61,11 +61,11 @@ function KpiCard({ icon, chip, value, bar, index = 0 }) {
     <motion.div {...entrance(index)} style={{ transformPerspective: 900 }} className="h-full">
       <TiltCard
         max={10}
-        className="group relative h-full rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition-shadow duration-200 hover:shadow-lg hover:shadow-slate-900/10"
+        className="group relative h-full rounded-2xl bg-surface p-5 shadow-sm shadow-black/5 ring-1 ring-line/70 transition-shadow duration-200 hover:shadow-md hover:shadow-black/10"
       >
         <div className={`absolute inset-x-0 top-0 h-0.5 rounded-t-2xl ${bar}`} />
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-slate-500">{icon.label}</p>
+          <p className="text-sm font-medium text-muted">{icon.label}</p>
           <span
             className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${chip}`}
             style={{ transform: 'translateZ(32px)' }}
@@ -74,12 +74,12 @@ function KpiCard({ icon, chip, value, bar, index = 0 }) {
           </span>
         </div>
         <p
-          className="mt-3 truncate text-2xl font-bold tabular-nums tracking-tight text-slate-800 sm:text-3xl"
+          className="mt-3 truncate text-2xl font-bold tabular-nums tracking-tight text-ink sm:text-3xl"
           style={{ transform: 'translateZ(22px)' }}
         >
           {value}
         </p>
-        <p className="mt-2 text-xs text-slate-500">{icon.sub}</p>
+        <p className="mt-2 text-xs text-muted">{icon.sub}</p>
       </TiltCard>
     </motion.div>
   )
@@ -94,14 +94,14 @@ export default function SummaryCards({ income, expense, balance, count }) {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <KpiCard
         icon={{ label: 'Total Pemasukan', node: ICONS.income, sub: `${formatNumber(count)} transaksi terfilter` }}
-        chip="bg-emerald-100 text-emerald-700"
-        bar="bg-emerald-500"
+        chip="bg-income/10 text-income"
+        bar="bg-income"
         value={formatCurrency(Math.round(incomeV))}
       />
       <KpiCard
         icon={{ label: 'Total Pengeluaran', node: ICONS.expense, sub: 'Dalam rentang filter aktif' }}
-        chip="bg-rose-100 text-rose-700"
-        bar="bg-rose-500"
+        chip="bg-expense/10 text-expense"
+        bar="bg-expense"
         value={formatCurrency(Math.round(expenseV))}
       />
 
@@ -109,21 +109,21 @@ export default function SummaryCards({ income, expense, balance, count }) {
         <TiltCard
           max={12}
           scale={1.03}
-          className="relative h-full rounded-2xl bg-gradient-to-br from-navy-900 to-indigo-950 p-5 text-white shadow-lg shadow-indigo-950/20 ring-1 ring-white/10 transition-shadow duration-200 hover:shadow-xl hover:shadow-indigo-950/40"
+          className="relative h-full rounded-2xl bg-gradient-to-br from-primary to-primary-strong p-5 text-white shadow-lg shadow-primary/20 ring-1 ring-primary/10 transition-shadow duration-200 hover:shadow-xl hover:shadow-primary/30"
         >
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
-            <div className="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-brand-500/30 blur-2xl" />
-            <div className="absolute -bottom-16 -left-8 h-36 w-36 rounded-full bg-emerald-400/20 blur-2xl" />
+            <div className="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-accent/25 blur-2xl" />
+            <div className="absolute -bottom-16 -left-8 h-36 w-36 rounded-full bg-income/20 blur-2xl" />
           </div>
           <div
             className="relative flex items-center justify-between"
             style={{ transform: 'translateZ(18px)' }}
           >
-            <p className="text-sm font-medium text-slate-300">Saldo Bersih</p>
+            <p className="text-sm font-medium text-white/70">Saldo Bersih</p>
             <motion.span
               animate={{ rotateY: [0, 360] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2.5 }}
-              className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-emerald-300 ring-1 ring-white/15"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-accent ring-1 ring-white/15"
               style={{ transform: 'translateZ(34px)', transformStyle: 'preserve-3d' }}
             >
               {ICONS.balance}
@@ -141,7 +141,7 @@ export default function SummaryCards({ income, expense, balance, count }) {
           >
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                balance >= 0 ? 'bg-emerald-400/15 text-emerald-300' : 'bg-rose-400/15 text-rose-300'
+                balance >= 0 ? 'bg-income/25 text-white' : 'bg-expense/25 text-white'
               }`}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-3 w-3">
@@ -153,7 +153,7 @@ export default function SummaryCards({ income, expense, balance, count }) {
               </svg>
               {balance >= 0 ? 'Surplus' : 'Defisit'}
             </span>
-            <span className="text-xs text-slate-400">Pemasukan − Pengeluaran</span>
+            <span className="text-xs text-white/60">Pemasukan − Pengeluaran</span>
           </div>
         </TiltCard>
       </motion.div>

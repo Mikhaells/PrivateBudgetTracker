@@ -31,17 +31,17 @@ export default function TagInput({ value, onChange, suggestions, id }) {
 
   return (
     <div>
-      <div className="flex min-h-11 flex-wrap items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+      <div className="flex min-h-11 flex-wrap items-center gap-2 rounded-xl border border-line bg-surface-2 px-3 py-2 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
         {value.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
+            className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent-strong ring-1 ring-accent/20"
           >
             #{tag}
             <button
               type="button"
               onClick={() => remove(tag)}
-              className="cursor-pointer text-indigo-400 transition hover:text-indigo-700"
+              className="cursor-pointer text-accent/60 transition hover:text-accent-strong"
               aria-label={`Hapus tag ${tag}`}
             >
               &times;
@@ -58,7 +58,7 @@ export default function TagInput({ value, onChange, suggestions, id }) {
             if (draft.trim()) add(draft)
           }}
           placeholder={value.length ? '' : 'Ketik tag lalu Enter, contoh: kebutuhan'}
-          className="min-w-40 flex-1 bg-transparent py-1 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+          className="min-w-40 flex-1 bg-transparent py-1 text-sm text-ink placeholder:text-muted focus:outline-none"
         />
       </div>
 
@@ -69,7 +69,7 @@ export default function TagInput({ value, onChange, suggestions, id }) {
               key={s}
               type="button"
               onClick={() => add(s)}
-              className="cursor-pointer rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
+              className="cursor-pointer rounded-full border border-line bg-surface px-2.5 py-0.5 text-xs text-muted transition hover:border-accent/50 hover:bg-accent/10 hover:text-accent-strong"
             >
               + {s}
             </button>

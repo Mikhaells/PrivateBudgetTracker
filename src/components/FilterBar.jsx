@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { PRESET_RANGES, TYPES, TYPE_LABELS } from '../lib/constants'
 import { daysAgoISO, startOfMonthISO } from '../lib/format'
-import { INPUT_CLS } from '../lib/ui'
+import { CARD_CLS, INPUT_CLS } from '../lib/ui'
 
 export default function FilterBar({ filters, onChange, categories }) {
   const set = (key, value) => onChange({ ...filters, [key]: value })
@@ -32,11 +32,11 @@ export default function FilterBar({ filters, onChange, categories }) {
     onChange({ type: 'all', category: 'all', from: '', to: '', search: '', preset: 'all' })
 
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div className={`${CARD_CLS} p-5`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-brand-600">
+          <span className="mr-1 inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-primary">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10m-7 6h4" />
             </svg>
             Filter
@@ -49,8 +49,8 @@ export default function FilterBar({ filters, onChange, categories }) {
               aria-pressed={activePreset === r.id}
               className={`cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold transition ${
                 activePreset === r.id
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'bg-surface-2 text-ink/70 hover:bg-line/60'
               }`}
             >
               {r.label}
@@ -61,7 +61,7 @@ export default function FilterBar({ filters, onChange, categories }) {
           <button
             type="button"
             onClick={clearAll}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-muted transition hover:bg-surface-2 hover:text-ink"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -73,7 +73,7 @@ export default function FilterBar({ filters, onChange, categories }) {
 
       <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div>
-          <label htmlFor="filter-type" className="mb-1 block text-xs font-medium text-slate-500">Tipe</label>
+          <label htmlFor="filter-type" className="mb-1 block text-xs font-medium text-muted">Tipe</label>
           <select
             id="filter-type"
             value={filters.type}
@@ -87,7 +87,7 @@ export default function FilterBar({ filters, onChange, categories }) {
         </div>
 
         <div>
-          <label htmlFor="filter-category" className="mb-1 block text-xs font-medium text-slate-500">Kategori</label>
+          <label htmlFor="filter-category" className="mb-1 block text-xs font-medium text-muted">Kategori</label>
           <select
             id="filter-category"
             value={filters.category}
@@ -104,25 +104,25 @@ export default function FilterBar({ filters, onChange, categories }) {
         </div>
 
         <div>
-          <label htmlFor="filter-from" className="mb-1 block text-xs font-medium text-slate-500">Dari tanggal</label>
+          <label htmlFor="filter-from" className="mb-1 block text-xs font-medium text-muted">Dari tanggal</label>
           <input id="filter-from" type="date" value={filters.from} onChange={(e) => set('from', e.target.value)} className={INPUT_CLS} />
         </div>
 
         <div>
-          <label htmlFor="filter-to" className="mb-1 block text-xs font-medium text-slate-500">Sampai tanggal</label>
+          <label htmlFor="filter-to" className="mb-1 block text-xs font-medium text-muted">Sampai tanggal</label>
           <input id="filter-to" type="date" value={filters.to} onChange={(e) => set('to', e.target.value)} className={INPUT_CLS} />
         </div>
       </div>
 
       <div className="mt-3">
-        <label htmlFor="filter-search" className="mb-1 block text-xs font-medium text-slate-500">Cari catatan / tag</label>
+        <label htmlFor="filter-search" className="mb-1 block text-xs font-medium text-muted">Cari catatan / tag</label>
         <div className="relative">
           <svg
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.3-4.3M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0z" />
           </svg>

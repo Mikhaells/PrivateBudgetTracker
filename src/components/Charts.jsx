@@ -3,7 +3,11 @@ import { formatCurrency, formatNumber } from '../lib/format'
 import useMediaQuery from '../lib/useMediaQuery'
 
 const baseTooltip = {
-  backgroundColor: 'rgba(15, 23, 42, 0.92)',
+  backgroundColor: 'rgba(255, 255, 255, 0.98)',
+  borderColor: 'rgba(17, 24, 39, 0.12)',
+  borderWidth: 1,
+  titleColor: '#111827',
+  bodyColor: '#374151',
   padding: 10,
   cornerRadius: 8,
   titleFont: { size: 12, weight: 600 },
@@ -65,9 +69,9 @@ export function ExpenseDoughnut({ data }) {
   return (
     <div className={`relative ${isMobile ? 'h-[22rem]' : 'h-72'}`}>
       <Doughnut data={chartData} options={options} />
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-xs font-medium text-slate-500">Total Pengeluaran</p>
-        <p className="mt-1 text-xl font-bold tabular-nums text-slate-800">
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center md:pr-36">
+        <p className="text-xs font-medium text-ink/60">Total Pengeluaran</p>
+        <p className="mt-1 text-xl font-bold tabular-nums text-ink">
           {total ? formatCurrency(total) : '—'}
         </p>
       </div>
@@ -104,7 +108,7 @@ export function ExpenseBar({ data }) {
       x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 11, weight: 500 } } },
       y: {
         beginAtZero: true,
-        grid: { color: 'rgba(148, 163, 184, 0.15)' },
+        grid: { color: 'rgba(17, 24, 39, 0.08)' },
         border: { display: false },
         ticks: { callback: (v) => formatNumber(v), font: { size: 11 } },
       },
@@ -122,8 +126,8 @@ export function MonthlyBar({ labels, income, expense }) {
   const chartData = {
     labels,
     datasets: [
-      { label: 'Pemasukan', data: income, backgroundColor: '#10b981', borderRadius: 6, maxBarThickness: 24 },
-      { label: 'Pengeluaran', data: expense, backgroundColor: '#f43f5e', borderRadius: 6, maxBarThickness: 24 },
+      { label: 'Pemasukan', data: income, backgroundColor: '#059669', borderRadius: 6, maxBarThickness: 24 },
+      { label: 'Pengeluaran', data: expense, backgroundColor: '#dc2626', borderRadius: 6, maxBarThickness: 24 },
     ],
   }
 
@@ -145,7 +149,7 @@ export function MonthlyBar({ labels, income, expense }) {
       x: { grid: { display: false }, ticks: { font: { size: 11, weight: 500 } } },
       y: {
         beginAtZero: true,
-        grid: { color: 'rgba(148, 163, 184, 0.15)' },
+        grid: { color: 'rgba(17, 24, 39, 0.08)' },
         border: { display: false },
         ticks: { callback: (v) => formatNumber(v), font: { size: 11 } },
       },
@@ -161,9 +165,9 @@ export function MonthlyBar({ labels, income, expense }) {
 
 export function ChartEmpty({ message }) {
   return (
-    <div className="grid h-72 place-items-center rounded-xl border border-dashed border-slate-300 bg-slate-50/50 text-sm text-slate-500">
+    <div className="grid h-72 place-items-center rounded-xl border border-dashed border-line bg-cream/50 text-sm text-muted">
       <div className="flex flex-col items-center gap-2">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-slate-300">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-muted">
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 15l4-4 3 3 5-6" />
         </svg>
         <span>{message}</span>

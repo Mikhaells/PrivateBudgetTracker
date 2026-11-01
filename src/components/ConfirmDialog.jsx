@@ -61,7 +61,7 @@ export default function ConfirmDialog({
       onClick={(e) => {
         if (e.target === backdropRef.current) onCancel()
       }}
-      className="fixed inset-0 z-[60] grid place-items-center bg-navy-900/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] grid place-items-center bg-ink/40 p-4 backdrop-blur-sm"
     >
       <motion.div
         ref={dialogRef}
@@ -74,12 +74,12 @@ export default function ConfirmDialog({
         exit={{ opacity: 0, y: 16, rotateX: 10, scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 300, damping: 26 }}
         style={{ transformPerspective: 700 }}
-        className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-slate-200"
+        className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-2xl shadow-black/20 ring-1 ring-line"
       >
         <div className="flex items-start gap-3">
           <span
             className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
-              danger ? 'bg-rose-100 text-rose-600' : 'bg-brand-50 text-brand-600'
+              danger ? 'bg-expense/10 text-expense' : 'bg-income/10 text-income'
             }`}
           >
             {danger ? (
@@ -93,10 +93,10 @@ export default function ConfirmDialog({
             )}
           </span>
           <div className="min-w-0">
-            <h2 id="confirm-title" className="text-base font-bold text-slate-800">
+            <h2 id="confirm-title" className="text-base font-bold text-ink">
               {title}
             </h2>
-            <p id="confirm-message" className="mt-1.5 text-sm leading-relaxed text-slate-500">
+            <p id="confirm-message" className="mt-1.5 text-sm leading-relaxed text-muted">
               {message}
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            className="cursor-pointer rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink/80 transition hover:bg-cream"
           >
             {cancelLabel}
           </button>
@@ -115,8 +115,8 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             className={`cursor-pointer rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-lg transition ${
               danger
-                ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/25 hover:from-rose-600 hover:to-rose-700'
-                : 'bg-gradient-to-r from-brand-500 to-brand-600 shadow-brand-500/25 hover:from-brand-600 hover:to-brand-700'
+                ? 'bg-gradient-to-r from-expense to-expense-strong shadow-expense/20 hover:brightness-110'
+                : 'bg-gradient-to-r from-primary to-primary-strong shadow-primary/20 hover:brightness-110'
             }`}
           >
             {confirmLabel}

@@ -14,7 +14,7 @@ const FOCUSABLE =
 
 function CategoryItem({ cat, onEdit, onDelete }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2.5 transition hover:border-slate-300 hover:bg-slate-50">
+    <div className="flex items-center gap-3 rounded-xl border border-line px-3 py-2.5 transition hover:border-primary/30 hover:bg-cream/60">
       <span
         className="grid h-9 w-9 shrink-0 place-items-center rounded-xl"
         style={{ backgroundColor: `${cat.color}1a`, color: cat.color }}
@@ -24,11 +24,11 @@ function CategoryItem({ cat, onEdit, onDelete }) {
         </svg>
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-slate-800">{cat.label}</p>
-        <p className="truncate text-xs text-slate-500">
+        <p className="truncate text-sm font-semibold text-ink">{cat.label}</p>
+        <p className="truncate text-xs text-muted">
           {cat.id}
           {cat.type === TYPES.EXPENSE && Number(cat.budget) > 0 && (
-            <span className="text-slate-500"> · Anggaran {formatAmountInput(String(cat.budget))}</span>
+            <span className="text-muted"> · Anggaran {formatAmountInput(String(cat.budget))}</span>
           )}
         </p>
       </div>
@@ -37,7 +37,7 @@ function CategoryItem({ cat, onEdit, onDelete }) {
           type="button"
           onClick={() => onEdit(cat)}
           aria-label={`Edit ${cat.label}`}
-          className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+          className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-muted transition hover:bg-primary/10 hover:text-primary"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7m-1.4-9.4a2 2 0 1 1 2.8 2.8L11 17l-4 1 1-4 9.6-9.4z" />
@@ -47,7 +47,7 @@ function CategoryItem({ cat, onEdit, onDelete }) {
           type="button"
           onClick={() => onDelete(cat)}
           aria-label={`Hapus ${cat.label}`}
-          className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
+          className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-muted transition hover:bg-expense/10 hover:text-expense"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -163,27 +163,27 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
       role="dialog"
       aria-modal="true"
       aria-labelledby="kategori-manager-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200"
+        className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl shadow-black/20 ring-1 ring-line"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-line/70 px-5 py-4">
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent/10 text-accent-strong">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h10M4 18h6" />
               </svg>
             </span>
-            <h2 id="kategori-manager-title" className="text-lg font-bold text-slate-800">Kelola Kategori</h2>
+            <h2 id="kategori-manager-title" className="text-lg font-bold text-ink">Kelola Kategori</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg text-muted transition hover:bg-surface-2 hover:text-ink"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -193,7 +193,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
           {/* Tipe */}
-          <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-surface-2 p-1 ring-1 ring-line/60">
             {[TYPES.EXPENSE, TYPES.INCOME].map((t) => (
               <button
                 key={t}
@@ -202,9 +202,9 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
                 className={`cursor-pointer rounded-lg py-2 text-sm font-semibold transition ${
                   type === t
                     ? t === TYPES.EXPENSE
-                      ? 'bg-rose-500 text-white shadow'
-                      : 'bg-emerald-500 text-white shadow'
-                    : 'text-slate-600 hover:text-slate-800'
+                      ? 'bg-expense text-white shadow'
+                      : 'bg-income text-white shadow'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 {TYPE_LABELS[t]}
@@ -219,23 +219,23 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
                 <CategoryItem key={c.id} cat={c} onEdit={startEdit} onDelete={handleDelete} />
               ))
             ) : (
-              <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-6 text-center text-sm text-slate-500">
+              <p className="rounded-xl border border-dashed border-line bg-cream/50 px-4 py-6 text-center text-sm text-muted">
                 Belum ada kategori {TYPE_LABELS[type]?.toLowerCase() || ''}. Tambahkan di bawah.
               </p>
             )}
           </div>
 
           {/* Form tambah/edit */}
-          <form ref={formRef} onSubmit={handleSubmit} className="mt-5 scroll-mt-4 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+          <form ref={formRef} onSubmit={handleSubmit} className="mt-5 scroll-mt-4 rounded-xl bg-cream/50 p-4 ring-1 ring-line/70">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-700">
+              <h3 className="text-sm font-bold text-ink">
                 {editing ? `Edit "${editing.label}"` : 'Tambah Kategori Baru'}
               </h3>
               {editing && (
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="cursor-pointer text-xs font-medium text-slate-500 transition hover:text-slate-700"
+                  className="cursor-pointer text-xs font-medium text-muted transition hover:text-ink"
                 >
                   Batal
                 </button>
@@ -243,7 +243,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
             </div>
 
             <div className="mt-3">
-              <label htmlFor="kategori-nama" className="mb-1.5 block text-xs font-medium text-slate-500">Nama kategori</label>
+              <label htmlFor="kategori-nama" className="mb-1.5 block text-xs font-medium text-muted">Nama kategori</label>
               <input
                 id="kategori-nama"
                 type="text"
@@ -256,7 +256,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
 
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">Ikon</label>
+                <label className="mb-1.5 block text-xs font-medium text-muted">Ikon</label>
                 <div className="grid grid-cols-6 gap-1.5">
                   {CATEGORY_ICON_CHOICES.map((id) => (
                     <button
@@ -266,8 +266,8 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
                       aria-label={`Ikon ${id}`}
                       className={`grid h-9 w-full cursor-pointer place-items-center rounded-lg transition ${
                         icon === id
-                          ? 'bg-brand-500 text-white shadow'
-                          : 'bg-white text-slate-500 ring-1 ring-slate-200 hover:bg-slate-100'
+                          ? 'bg-primary text-white shadow'
+                          : 'bg-surface text-muted ring-1 ring-line hover:bg-cream'
                       }`}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -279,7 +279,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">Warna</label>
+                <label className="mb-1.5 block text-xs font-medium text-muted">Warna</label>
                 <div className="grid grid-cols-6 gap-1.5">
                   {CATEGORY_COLOR_CHOICES.map((c) => (
                     <button
@@ -288,7 +288,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
                       onClick={() => setColor(c)}
                       aria-label={`Warna ${c}`}
                       className={`h-9 w-full cursor-pointer rounded-lg transition ${
-                        color === c ? 'scale-110 ring-2 ring-offset-2 ring-slate-400' : 'hover:scale-105'
+                        color === c ? 'scale-110 ring-2 ring-offset-2 ring-primary/70 ring-offset-surface' : 'hover:scale-105'
                       }`}
                       style={{ backgroundColor: c }}
                     />
@@ -297,11 +297,11 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
 
                 {type === TYPES.EXPENSE && (
                   <div className="mt-3">
-                    <label htmlFor="kategori-anggaran" className="mb-1.5 block text-xs font-medium text-slate-500">
+                    <label htmlFor="kategori-anggaran" className="mb-1.5 block text-xs font-medium text-muted">
                       Anggaran per bulan (opsional)
                     </label>
                     <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted">
                         Rp
                       </span>
                       <input
@@ -315,7 +315,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
                         className={`${INPUT_CLS} pl-9`}
                       />
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-500">
+                    <p className="mt-1 text-[11px] text-muted">
                       Kosongkan jika tidak ingin memantau anggaran kategori ini.
                     </p>
                   </div>
@@ -325,7 +325,7 @@ export default function CategoryManager({ categories, onSave, onDelete, onClose 
 
             <button
               type="submit"
-              className="mt-4 w-full cursor-pointer rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-500/25 transition hover:from-brand-600 hover:to-brand-700"
+              className="mt-4 w-full cursor-pointer rounded-xl bg-gradient-to-r from-primary to-primary-strong py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:brightness-110"
             >
               {editing ? 'Simpan Perubahan' : 'Tambah Kategori'}
             </button>

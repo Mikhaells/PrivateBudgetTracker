@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CATEGORY_ICONS, DEFAULT_CATEGORIES, TYPES, TYPE_LABELS } from '../lib/constants'
 import { formatAmountInput, onlyDigits, todayISO } from '../lib/format'
-import { INPUT_CLS } from '../lib/ui'
+import { CARD_CLS, INPUT_CLS } from '../lib/ui'
 import TagInput from './TagInput'
 import Calculator from './Calculator'
 
@@ -99,14 +99,12 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
   return (
     <form
       onSubmit={handleSubmit}
-      className={`rounded-2xl bg-white p-5 transition-all duration-300 ${
-        isEdit
-          ? 'shadow-lg shadow-brand-500/10 ring-2 ring-brand-400'
-          : 'shadow-sm ring-1 ring-slate-200'
+      className={`${CARD_CLS} p-5 transition-all duration-300 ${
+        isEdit ? 'shadow-primary/10 ring-2 ring-primary/40' : ''
       }`}
     >
       {isEdit && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2.5 text-sm font-medium text-brand-700 ring-1 ring-brand-200">
+        <div className="mb-4 flex items-center gap-2 rounded-xl bg-accent/10 px-3 py-2.5 text-sm font-medium text-accent-strong ring-1 ring-accent/25">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 shrink-0">
             <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7m-1.4-9.4a2 2 0 1 1 2.8 2.8L11 17l-4 1 1-4 9.6-9.4z" />
           </svg>
@@ -116,12 +114,12 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
           </span>
-          <h2 className="text-lg font-bold text-slate-800">
+          <h2 className="text-lg font-bold text-ink">
             {isEdit ? 'Edit Transaksi' : 'Tambah Transaksi'}
           </h2>
         </div>
@@ -129,7 +127,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
           <button
             type="button"
             onClick={onCancel}
-            className="cursor-pointer text-sm font-medium text-slate-500 transition hover:text-slate-700"
+            className="cursor-pointer text-sm font-medium text-muted transition hover:text-ink"
           >
             Batal edit
           </button>
@@ -137,7 +135,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
       </div>
 
       {/* Toggle tipe */}
-      <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+      <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl bg-surface-2 p-1 ring-1 ring-line/60">
         {[TYPES.EXPENSE, TYPES.INCOME].map((t) => (
           <button
             key={t}
@@ -146,9 +144,9 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
             className={`cursor-pointer rounded-lg py-2.5 text-sm font-semibold transition ${
               form.type === t
                 ? t === TYPES.EXPENSE
-                  ? 'bg-rose-500 text-white shadow'
-                  : 'bg-emerald-500 text-white shadow'
-                : 'text-slate-600 hover:text-slate-800'
+                  ? 'bg-expense text-white shadow'
+                  : 'bg-income text-white shadow'
+                : 'text-muted hover:text-ink'
             }`}
           >
             {TYPE_LABELS[t]}
@@ -159,11 +157,11 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
       {/* Jumlah + Tanggal */}
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="form-amount" className="mb-1.5 block text-sm font-medium text-slate-600">Jumlah</label>
+          <label htmlFor="form-amount" className="mb-1.5 block text-sm font-medium text-ink/70">Jumlah</label>
           <div className="relative">
             <span
               className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold ${
-                isExpense ? 'text-rose-500' : 'text-emerald-500'
+                isExpense ? 'text-expense' : 'text-income'
               }`}
             >
               Rp
@@ -186,8 +184,8 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
               title="Kalkulator"
               className={`absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-lg transition ${
                 calcOpen
-                  ? 'bg-brand-500 text-white shadow-sm'
-                  : 'text-slate-500 hover:bg-brand-50 hover:text-brand-600'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-muted hover:bg-primary/10 hover:text-primary'
               }`}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -213,7 +211,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
           )}
         </div>
         <div>
-          <label htmlFor="form-date" className="mb-1.5 block text-sm font-medium text-slate-600">Tanggal</label>
+          <label htmlFor="form-date" className="mb-1.5 block text-sm font-medium text-ink/70">Tanggal</label>
           <input
             id="form-date"
             type="date"
@@ -227,7 +225,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
 
       {/* Kategori */}
       <div className="mt-5">
-        <p id="form-category-label" className="mb-2 text-sm font-medium text-slate-600">Kategori</p>
+        <p id="form-category-label" className="mb-2 text-sm font-medium text-ink/70">Kategori</p>
         <div role="radiogroup" aria-labelledby="form-category-label" className="grid grid-cols-2 gap-2">
           {(categories[form.type] || DEFAULT_CATEGORIES[form.type] || []).map((c) => (
             <button
@@ -238,8 +236,8 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
               onClick={() => set('category', c.id)}
               className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition ${
                 form.category === c.id
-                  ? 'border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-300'
-                  : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                  ? 'border-primary bg-primary/10 text-primary-soft ring-1 ring-primary/30'
+                  : 'border-line text-ink/70 hover:border-primary/30 hover:bg-cream/60'
               }`}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke={c.color} strokeWidth="2" className="h-5 w-5 shrink-0">
@@ -257,7 +255,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
 
       {/* Catatan */}
       <div className="mt-5">
-        <label htmlFor="form-note" className="mb-1.5 block text-sm font-medium text-slate-600">Catatan</label>
+        <label htmlFor="form-note" className="mb-1.5 block text-sm font-medium text-ink/70">Catatan</label>
         <input
           id="form-note"
           type="text"
@@ -270,16 +268,16 @@ export default function TransactionForm({ initial, onSubmit, onCancel, suggested
 
       {/* Tags */}
       <div className="mt-5">
-        <label htmlFor="form-tags" className="mb-1.5 block text-sm font-medium text-slate-600">Tag</label>
+        <label htmlFor="form-tags" className="mb-1.5 block text-sm font-medium text-ink/70">Tag</label>
         <TagInput id="form-tags" value={form.tags} onChange={(tags) => set('tags', tags)} suggestions={suggestedTags} />
       </div>
 
       <button
         type="submit"
-        className={`mt-6 w-full cursor-pointer rounded-xl py-3 text-sm font-bold text-white shadow-lg transition ${
+        className={`mt-6 w-full cursor-pointer rounded-xl py-3 text-sm font-bold shadow-lg transition hover:brightness-110 ${
           isExpense
-            ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/25 hover:from-rose-600 hover:to-rose-700'
-            : 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/25 hover:from-emerald-600 hover:to-emerald-700'
+            ? 'bg-gradient-to-r from-expense to-expense-strong text-white shadow-expense/20'
+            : 'bg-gradient-to-r from-income to-income-strong text-white shadow-income/20'
         }`}
       >
         {isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}

@@ -27,7 +27,7 @@ export default function TiltCard({
   const glareY = useTransform(py, [0, 1], ['15%', '85%'])
   const glareBg = useTransform(
     [glareX, glareY],
-    ([x, y]) => `radial-gradient(circle at ${x} ${y}, rgba(255,255,255,0.22) 0%, transparent 55%)`
+    ([x, y]) => `radial-gradient(circle at ${x} ${y}, rgba(217,119,6,0.12) 0%, transparent 55%)`
   )
 
   if (reduceMotion) {

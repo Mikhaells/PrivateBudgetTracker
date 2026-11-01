@@ -17,21 +17,21 @@ export const TYPE_LABELS = {
 // sehingga pengguna bisa menambah/mengedit/menghapus kategori dan anggarannya.
 export const DEFAULT_CATEGORIES = {
   expense: [
-    { id: 'makanan', label: 'Makanan & Minuman', color: '#f43f5e', type: TYPES.EXPENSE },
-    { id: 'transportasi', label: 'Transportasi', color: '#f97316', type: TYPES.EXPENSE },
-    { id: 'belanja', label: 'Belanja', color: '#eab308', type: TYPES.EXPENSE },
-    { id: 'tagihan', label: 'Tagihan & Utilitas', color: '#3b82f6', type: TYPES.EXPENSE },
-    { id: 'hiburan', label: 'Hiburan', color: '#a855f7', type: TYPES.EXPENSE },
-    { id: 'kesehatan', label: 'Kesehatan', color: '#06b6d4', type: TYPES.EXPENSE },
-    { id: 'pendidikan', label: 'Pendidikan', color: '#10b981', type: TYPES.EXPENSE },
-    { id: 'lainnya', label: 'Lainnya', color: '#64748b', type: TYPES.EXPENSE },
+    { id: 'makanan', label: 'Makanan & Minuman', color: '#dc2626', type: TYPES.EXPENSE },
+    { id: 'transportasi', label: 'Transportasi', color: '#d97706', type: TYPES.EXPENSE },
+    { id: 'belanja', label: 'Belanja', color: '#7c2d12', type: TYPES.EXPENSE },
+    { id: 'tagihan', label: 'Tagihan & Utilitas', color: '#0f766e', type: TYPES.EXPENSE },
+    { id: 'hiburan', label: 'Hiburan', color: '#9f1239', type: TYPES.EXPENSE },
+    { id: 'kesehatan', label: 'Kesehatan', color: '#059669', type: TYPES.EXPENSE },
+    { id: 'pendidikan', label: 'Pendidikan', color: '#4d7c0f', type: TYPES.EXPENSE },
+    { id: 'lainnya', label: 'Lainnya', color: '#78716c', type: TYPES.EXPENSE },
   ],
   income: [
-    { id: 'gaji', label: 'Gaji', color: '#10b981', type: TYPES.INCOME },
-    { id: 'bonus', label: 'Bonus', color: '#22c55e', type: TYPES.INCOME },
-    { id: 'freelance', label: 'Freelance', color: '#14b8a6', type: TYPES.INCOME },
-    { id: 'investasi', label: 'Investasi', color: '#84cc16', type: TYPES.INCOME },
-    { id: 'lainnya', label: 'Lainnya', color: '#64748b', type: TYPES.INCOME },
+    { id: 'gaji', label: 'Gaji', color: '#059669', type: TYPES.INCOME },
+    { id: 'bonus', label: 'Bonus', color: '#047857', type: TYPES.INCOME },
+    { id: 'freelance', label: 'Freelance', color: '#0f766e', type: TYPES.INCOME },
+    { id: 'investasi', label: 'Investasi', color: '#4d7c0f', type: TYPES.INCOME },
+    { id: 'lainnya', label: 'Lainnya', color: '#78716c', type: TYPES.INCOME },
   ],
 }
 
@@ -61,8 +61,8 @@ export const PRESET_RANGES = [
 ]
 
 export const CHART_COLORS = [
-  '#f43f5e', '#f97316', '#eab308', '#3b82f6', '#a855f7',
-  '#06b6d4', '#10b981', '#84cc16', '#6366f1', '#ec4899',
+  '#dc2626', '#d97706', '#059669', '#1f2937', '#7c2d12',
+  '#0f766e', '#a16207', '#4d7c0f', '#9f1239', '#78716c',
 ]
 
 // Pilihan ikon yang bisa dipakai untuk kategori baru (path-nya ada di CATEGORY_ICONS).
