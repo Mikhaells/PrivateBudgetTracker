@@ -8,14 +8,7 @@ function formatDriveTime(value) {
   return date.toLocaleString('id-ID')
 }
 
-export default function ExportDropdown({
-  onExportCsv,
-  onExportPdf,
-  disabled,
-  onBackupJson,
-  onRestoreJson,
-  drive,
-}) {
+export default function ExportDropdown({ onExportCsv, onExportPdf, disabled, drive }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -65,7 +58,7 @@ export default function ExportDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        title="Export, backup, dan restore"
+        title="Export & backup Google Drive"
         className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-black/10 transition hover:bg-primary-strong"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -134,55 +127,6 @@ export default function ExportDropdown({
                 </span>
               </motion.button>
             ))}
-
-            <div className="mt-1 border-t border-line/70">
-              <p className="px-4 pb-1 pt-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
-                Backup &amp; Restore (semua data)
-              </p>
-              {[
-                {
-                  key: 'backup',
-                  onClick: () => run(onBackupJson),
-                  iconCls: 'bg-primary/10 text-primary',
-                  icon: (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 7v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7" />
-                    </svg>
-                  ),
-                  title: 'Backup (.json)',
-                  sub: 'Unduh fotokopi semua data',
-                },
-                {
-                  key: 'restore',
-                  onClick: () => run(onRestoreJson),
-                  iconCls: 'bg-accent/10 text-accent-strong',
-                  icon: (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21V9m0 0-4 4m4-4 4 4M20 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2" />
-                    </svg>
-                  ),
-                  title: 'Restore (.json)',
-                  sub: 'Pulihkan dari file JSON',
-                },
-              ].map((item, i) => (
-                <motion.button
-                  key={item.key}
-                  type="button"
-                  onClick={item.onClick}
-                  initial={{ opacity: 0, y: -8, rotateX: -25 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{ delay: 0.16 + i * 0.06, type: 'spring', stiffness: 280, damping: 22 }}
-                  style={{ transformPerspective: 500 }}
-                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-sm text-ink/80 transition hover:bg-cream/60"
-                >
-                  <span className={`grid h-8 w-8 place-items-center rounded-lg ${item.iconCls}`}>{item.icon}</span>
-                  <span>
-                    <span className="block font-semibold">{item.title}</span>
-                    <span className="block text-xs text-muted">{item.sub}</span>
-                  </span>
-                </motion.button>
-              ))}
-            </div>
 
             <div className="mt-1 border-t border-line/70">
               <p className="px-4 pb-1 pt-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted">

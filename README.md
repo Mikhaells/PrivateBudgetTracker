@@ -1,6 +1,6 @@
 # Budget Tracker — Dashboard Keuangan Pribadi
 
-Aplikasi **budget tracker** untuk mencatat pemasukan & pengeluaran, menganalisis arus uang dengan grafik, dan mengekspor laporan. Data utama disimpan di **LocalStorage** browser; tersedia **backup/restore JSON** dan **backup otomatis ke Google Drive** (opsional).
+Aplikasi **budget tracker** untuk mencatat pemasukan & pengeluaran, menganalisis arus uang dengan grafik, dan mengekspor laporan. Data utama disimpan di **LocalStorage** browser; tersedia **backup otomatis ke Google Drive** (opsional).
 
 ## Fitur
 
@@ -9,7 +9,6 @@ Aplikasi **budget tracker** untuk mencatat pemasukan & pengeluaran, menganalisis
 - Visualisasi **Chart.js**: doughnut (pengeluaran per kategori), bar distribusi, dan bar pemasukan vs pengeluaran per bulan
 - Sistem **tag** (input bebas + saran tag otomatis) untuk kategorisasi lintas-baris
 - **Export ke CSV** (Excel/Sheets friendly, UTF-8 BOM) dan **PDF** (laporan + ringkasan saldo)
-- **Backup & Restore JSON** — unduh seluruh data (transaksi, kategori, tag) jadi satu file, lalu pulihkan dengan mode *ganti semua* atau *gabungkan*
 - **Google Drive (opsional)** — backup otomatis ke folder tersembunyi `appDataFolder`; tidak perlu memilih file atau membuat file manual
 - Edit & hapus transaksi, reset data
 - Responsif (mobile/desktop) dengan Tailwind CSS
@@ -44,37 +43,11 @@ npm install
 npm run dev      # buka http://localhost:5173
 ```
 
-## Backup & Restore JSON
+## Backup otomatis ke Google Drive
 
-Menu **Export / Backup** di header punya tiga bagian: export terfilter (CSV/PDF), backup/restore semua data, dan Google Drive.
+Menu **Export / Backup** di header punya dua bagian: export terfilter (CSV/PDF) dan Google Drive.
 
-- **Backup (.json)** mengunduh `budget-tracker-backup-YYYY-MM-DD.json` berisi **seluruh** transaksi, kategori (termasuk anggaran), dan tag — bukan hanya hasil filter.
-- **Restore (.json)** membaca file, memvalidasi isinya, lalu menampilkan ringkasan sebelum menulis apa pun.
-  - **Ganti semua** — data browser diganti isi file.
-  - **Gabungkan** — hanya transaksi/kategori dengan ID baru yang ditambahkan.
-- File lama tetap aman jika validasi gagal. Setelah restore, tersedia tombol **Urungkan** selama beberapa detik.
-
-Format file:
-
-```json
-{
-  "app": "private-budget-tracker",
-  "version": 1,
-  "exportedAt": "2026-11-02T03:41:12.000Z",
-  "counts": { "transactions": 128, "categories": 12, "tags": 34 },
-  "data": {
-    "transactions": [],
-    "categories": { "expense": [], "income": [] },
-    "tags": []
-  }
-}
-```
-
-> File backup berisi data keuangan **plaintext**. Simpan di tempat yang aman dan jangan bagikan link-nya.
-
-## Google Drive (opsional)
-
-Backup otomatis ke Google Drive memakai scope `drive.appdata` dan menyimpan **satu file** di folder tersembunyi `appDataFolder`:
+Backup otomatis memakai scope `drive.appdata` dan menyimpan **satu file** di folder tersembunyi `appDataFolder`:
 
 - Scope `drive.appdata` hanya memberi akses ke folder data aplikasi ini — aplikasi tidak bisa membaca file lain di Drive pengguna.
 - File tidak muncul di tampilan Drive biasa dan tidak mengotori folder pengguna.
@@ -85,8 +58,8 @@ Backup otomatis ke Google Drive memakai scope `drive.appdata` dan menyimpan **sa
 1. Buka [Google Cloud Console](https://console.cloud.google.com/) → buat project baru.
 2. **APIs & Services → Library** → aktifkan **Google Drive API**.
 3. **OAuth consent screen** → pilih **External** → isi nama aplikasi & email.
-   - Saat masih **Testing**, tambahkan email Google kamu sebagai **Test user**.
-   - Refresh token di mode Testing bisa kedaluwarsa; untuk pemakaian jangka panjang, publish aplikasinya.
+   - Saat masih **Testing**, tambahkan setiap email yang akan memakai aplikasi sebagai **Test user** (maksimal 100).
+   - Aplikasi hanya memakai access token jangka pendek (±1 jam), jadi mode Testing sudah cukup untuk pemakaian pribadi.
 4. **Credentials → Create credentials → OAuth client ID** → tipe **Web application**.
    - **Authorized JavaScript origins**:
      - `http://localhost:5173`
@@ -105,8 +78,10 @@ Backup otomatis ke Google Drive memakai scope `drive.appdata` dan menyimpan **sa
 
 - Klik **Hubungkan Google Drive** → pilih akun → izinkan. Aplikasi mencari file backup; jika belum ada, file dibuat otomatis.
 - Jika Drive sudah punya backup, aplikasi menawarkan **Pulihkan dari Drive** atau **Simpan versi ini** (timpa Drive dengan data lokal). Ini mencegah data lokal menimpa backup secara tidak sengaja.
+- **Reset** hanya menghapus data di browser. Jika Google Drive sedang terhubung, koneksi diputuskan dan file backup di Drive **tetap utuh**.
 - Access token Google berlaku ±1 jam dan hanya disimpan di memori (tidak di LocalStorage). Saat halaman dibuka, aplikasi mencoba menyambung ulang secara senyap; jika gagal, user perlu klik **Hubungkan** lagi.
-- Karena aplikasi ini murni frontend (tanpa server), tidak ada refresh token permanen. Untuk sync yang benar-benar "connect sekali selamanya", diperlukan backend (mis. Supabase) — backup JSON dan Drive tetap berguna sebagai jaring pengaman.
+- Karena aplikasi ini murni frontend (tanpa server), tidak ada refresh token permanen. Untuk sync yang benar-benar "connect sekali selamanya", diperlukan backend (mis. Supabase).
+- File backup di Drive berisi data keuangan **plaintext** dan hanya bisa diakses oleh aplikasi ini melalui akun Google masing-masing.
 
 ## Deploy ke GitHub Pages
 
@@ -131,8 +106,8 @@ src/
 ├── lib/
 │   ├── constants.js     # kategori, warna, ikon, preset
 │   ├── store.js         # LocalStorage CRUD + seed data
-│   ├── backup.js        # build/parse/validasi/apply backup JSON
-│   ├── drive.js         # Google Drive API (appDataFolder, drive.file)
+│   ├── backup.js        # format, validasi & penerapan payload backup Drive
+│   ├── drive.js         # Google Drive API (appDataFolder, drive.appdata)
 │   ├── useDriveBackup.js# hook: connect, auto-sync, restore
 │   ├── format.js        # format mata uang/tanggal (id-ID, IDR)
 │   ├── analytics.js     # agregasi untuk grafik

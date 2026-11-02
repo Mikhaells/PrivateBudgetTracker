@@ -8,7 +8,6 @@ import {
 
 export const BACKUP_APP_ID = 'private-budget-tracker'
 export const BACKUP_VERSION = 1
-export const BACKUP_FILE_BASENAME = 'budget-tracker-backup'
 
 const MAX_NOTE = 500
 const MAX_LABEL = 80
@@ -284,59 +283,11 @@ export function parseBackupText(text, { sourceName = 'file' } = {}) {
   return { ok: true, backup, warnings, sourceName }
 }
 
-export function applyBackup({ current, incoming, mode = 'replace' }) {
-  if (mode === 'merge') {
-    const transactionsById = new Map((current.transactions || []).map((transaction) => [transaction.id, transaction]))
-    let addedTransactions = 0
-    let skippedTransactions = 0
-
-    for (const transaction of incoming.transactions || []) {
-      if (transactionsById.has(transaction.id)) {
-        skippedTransactions += 1
-        continue
-      }
-      transactionsById.set(transaction.id, transaction)
-      addedTransactions += 1
-    }
-
-    const incomingCategories = incoming.categories || { [TYPES.EXPENSE]: [], [TYPES.INCOME]: [] }
-    let addedCategories = 0
-    const categories = {}
-    for (const type of [TYPES.EXPENSE, TYPES.INCOME]) {
-      const byId = new Map((current.categories?.[type] || []).map((category) => [category.id, category]))
-      for (const category of incomingCategories[type] || []) {
-        if (byId.has(category.id)) continue
-        byId.set(category.id, category)
-        addedCategories += 1
-      }
-      categories[type] = [...byId.values()]
-    }
-
-    const tags = [...new Set([...(current.tags || []), ...(incoming.tags || [])])]
-    const addedTags = tags.length - new Set(current.tags || []).size
-
-    return {
-      data: {
-        transactions: sortTransactions([...transactionsById.values()]),
-        categories,
-        tags,
-      },
-      stats: { addedTransactions, skippedTransactions, addedCategories, addedTags },
-    }
-  }
-
+export function applyBackup({ current, incoming }) {
   return {
-    data: {
-      transactions: sortTransactions(incoming.transactions || []),
-      categories: incoming.categories || current.categories,
-      tags: incoming.tags || [],
-    },
-    stats: {
-      addedTransactions: (incoming.transactions || []).length,
-      skippedTransactions: 0,
-      addedCategories: 0,
-      addedTags: (incoming.tags || []).length,
-    },
+    transactions: sortTransactions(incoming.transactions || []),
+    categories: incoming.categories || current.categories,
+    tags: incoming.tags || [],
   }
 }
 
@@ -348,23 +299,4 @@ export function writeBackupToStorage(data) {
   localStorage.setItem(CATEGORIES_KEY, JSON.stringify(data.categories))
   localStorage.setItem(TAGS_KEY, JSON.stringify(data.tags))
   localStorage.setItem(SEEDED_KEY, '1')
-}
-
-export function backupFileName(date = new Date()) {
-  return `${BACKUP_FILE_BASENAME}-${date.toISOString().slice(0, 10)}.json`
-}
-
-export function downloadBackup(payload, fileName = backupFileName()) {
-  const safeName = fileName.replace(/[\\/:*?"<>|]+/g, '-')
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: 'application/json;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = safeName
-  document.body.appendChild(anchor)
-  anchor.click()
-  document.body.removeChild(anchor)
-  URL.revokeObjectURL(url)
 }
