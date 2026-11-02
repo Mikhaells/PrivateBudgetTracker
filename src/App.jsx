@@ -15,11 +15,21 @@ import {
 } from './lib/store'
 import { summarize, expenseByCategory, monthlyComparison, allTags } from './lib/analytics'
 import { exportCSV, exportPDF } from './lib/export'
+import {
+  applyBackup,
+  backupCounts,
+  buildBackup,
+  downloadBackup,
+  parseBackupText,
+  writeBackupToStorage,
+} from './lib/backup'
+import { useDriveBackup } from './lib/useDriveBackup'
 import SummaryCards from './components/SummaryCards'
 import TransactionForm from './components/TransactionForm'
 import FilterBar from './components/FilterBar'
 import TransactionList from './components/TransactionList'
 import ExportDropdown from './components/ExportDropdown'
+import RestoreDialog from './components/RestoreDialog'
 import BudgetPanel from './components/BudgetPanel'
 import CategoryManager from './components/CategoryManager'
 import ConfirmDialog from './components/ConfirmDialog'
@@ -68,9 +78,11 @@ export default function App() {
   const [editing, setEditing] = useState(null)
   const [toast, setToast] = useState(null)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [pendingRestore, setPendingRestore] = useState(null)
   const toastTimer = useRef(null)
   const toastId = useRef(0)
   const formRef = useRef(null)
+  const restoreFileRef = useRef(null)
 
   useEffect(() => {
     if (editing) {
@@ -185,17 +197,141 @@ export default function App() {
   }
 
   const handleReset = () => {
+    const hadDriveBackup = drive.status === 'connected' || drive.autoSync
     clearAll()
     setTransactions([])
     setTags([])
     setEditing(null)
     setFilters(DEFAULT_FILTERS)
     setConfirmReset(false)
+    if (hadDriveBackup) {
+      // Jangan timpa backup di Drive dengan data kosong: putuskan koneksi,
+      // biarkan file di Drive tetap utuh agar bisa dipulihkan kapan saja.
+      drive.disconnect({ notify: false })
+      showToast(
+        'Data lokal dihapus. Backup Google Drive tetap tersimpan; koneksi diputuskan.',
+        'danger'
+      )
+      return
+    }
     showToast('Semua data telah dihapus', 'danger')
   }
 
   const handleExportCsv = () => exportCSV(filtered, categories)
   const handleExportPdf = () => exportPDF(filtered, summary, categories)
+
+  const backupData = useMemo(
+    () => ({ transactions, categories, tags }),
+    [transactions, categories, tags]
+  )
+  const currentCounts = useMemo(() => backupCounts(backupData), [backupData])
+
+  const applyRestoredData = (restoredData, { message, undoMessage } = {}) => {
+    const previous = { transactions, categories, tags }
+    try {
+      writeBackupToStorage(restoredData)
+    } catch (error) {
+      const isQuota = error?.name === 'QuotaExceededError' || error?.code === 22
+      showToast(
+        isQuota
+          ? 'Penyimpanan browser penuh. Restore dibatalkan agar data lama tetap aman.'
+          : 'Gagal menyimpan hasil restore ke browser.',
+        'danger'
+      )
+      return false
+    }
+
+    setTransactions(restoredData.transactions)
+    setCategories(restoredData.categories)
+    setTags(restoredData.tags)
+    setEditing(null)
+    setFilters(DEFAULT_FILTERS)
+
+    if (undoMessage) {
+      showToast(message, 'success', {
+        label: 'Urungkan',
+        onClick: () => {
+          try {
+            writeBackupToStorage(previous)
+          } catch {
+            // Abaikan: undo hanya jaring pengaman tambahan.
+          }
+          setTransactions(previous.transactions)
+          setCategories(previous.categories)
+          setTags(previous.tags)
+          setToast(null)
+          showToast(undoMessage)
+        },
+      })
+    } else {
+      showToast(message)
+    }
+    return true
+  }
+
+  const handleBackup = () => {
+    const payload = buildBackup(backupData)
+    downloadBackup(payload)
+    showToast(`Backup ${payload.counts.transactions} transaksi berhasil diunduh.`)
+  }
+
+  const handleRestorePick = () => restoreFileRef.current?.click()
+
+  const handleRestoreFile = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File backup terlalu besar (maksimal 10 MB).', 'danger')
+      return
+    }
+    try {
+      const text = await file.text()
+      const parsed = parseBackupText(text, { sourceName: file.name })
+      if (!parsed.ok) {
+        showToast(parsed.error, 'danger')
+        return
+      }
+      setPendingRestore({ ...parsed, fileName: file.name })
+    } catch {
+      showToast('File tidak bisa dibaca.', 'danger')
+    }
+  }
+
+  const handleConfirmRestore = (mode) => {
+    if (!pendingRestore) return
+    const result = applyBackup({
+      current: { transactions, categories, tags },
+      incoming: pendingRestore.backup.data,
+      mode,
+    })
+    const message =
+      mode === 'merge'
+        ? `Digabungkan: +${result.stats.addedTransactions} transaksi, +${result.stats.addedCategories} kategori.`
+        : `Data dipulihkan: ${result.data.transactions.length} transaksi.`
+    setPendingRestore(null)
+    applyRestoredData(result.data, {
+      message,
+      undoMessage: mode === 'merge' ? 'Penggabungan dibatalkan.' : 'Restore dibatalkan.',
+    })
+  }
+
+  const drive = useDriveBackup({
+    data: backupData,
+    notify: showToast,
+    onRestore: (parsed) => {
+      const result = applyBackup({
+        current: { transactions, categories, tags },
+        incoming: parsed.backup.data,
+        mode: 'replace',
+      })
+      const saved = applyRestoredData(result.data, {
+        message: `Data dari Google Drive dipulihkan: ${result.data.transactions.length} transaksi.`,
+        undoMessage: 'Restore dari Google Drive dibatalkan.',
+      })
+      if (!saved) throw new Error('Gagal menulis data hasil restore ke browser.')
+    },
+  })
 
   return (
     <MotionConfig reducedMotion="user">
@@ -224,7 +360,7 @@ export default function App() {
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => setShowCategories(true)}
@@ -241,6 +377,9 @@ export default function App() {
               onExportCsv={handleExportCsv}
               onExportPdf={handleExportPdf}
               disabled={filtered.length === 0}
+              onBackupJson={handleBackup}
+              onRestoreJson={handleRestorePick}
+              drive={drive}
             />
             <button
               type="button"
@@ -371,7 +510,9 @@ export default function App() {
         <p>
           Budget Tracker — dibangun dengan React, Tailwind CSS, Chart.js &amp; Motion.
         </p>
-        <p className="mt-1">Data disimpan lokal di browser (LocalStorage) &amp; tidak pernah dikirim ke server.</p>
+        <p className="mt-1">
+          Data disimpan lokal di browser. Backup opsional ke file JSON atau Google Drive pribadi.
+        </p>
       </footer>
 
       {/* Toast notifikasi */}
@@ -433,12 +574,35 @@ export default function App() {
         />
       )}
 
+      <input
+        ref={restoreFileRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={handleRestoreFile}
+      />
+
+      <AnimatePresence>
+        {pendingRestore && (
+          <RestoreDialog
+            pending={pendingRestore}
+            currentCounts={currentCounts}
+            onConfirm={handleConfirmRestore}
+            onCancel={() => setPendingRestore(null)}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {confirmReset && (
           <ConfirmDialog
             open
             title="Hapus semua data?"
-            message="Semua transaksi, kategori tambahan, dan anggaran akan dihapus permanen dari browser ini. Tindakan ini tidak bisa dibatalkan."
+            message={
+              drive.status === 'connected'
+                ? 'Semua transaksi, kategori tambahan, dan anggaran akan dihapus dari browser ini. Backup di Google Drive tetap tersimpan dan koneksi akan diputuskan, jadi kamu masih bisa memulihkannya nanti. Tindakan ini tidak bisa dibatalkan.'
+                : 'Semua transaksi, kategori tambahan, dan anggaran akan dihapus permanen dari browser ini. Tindakan ini tidak bisa dibatalkan.'
+            }
             confirmLabel="Ya, hapus semua"
             cancelLabel="Batal"
             onConfirm={handleReset}
